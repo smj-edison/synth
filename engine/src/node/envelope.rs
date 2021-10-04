@@ -31,6 +31,22 @@ pub struct Envelope {
 
 // TODO: ADSR linear only
 impl Envelope {
+    pub fn new(attack: f32, decay: f32, sustain: f32, release: f32) -> Envelope {
+        Envelope {
+            attack: attack,
+            decay: decay,
+            sustain: sustain,
+            release: release,
+            state: EnvelopeState::Releasing,
+            amplitude_position: 0.0,
+            amplitude_anchor: 0.0,
+            current_amplitude: 0.0,
+            buffer_gate: [0_f32; BUFFER_SIZE],
+            buffer_in: [0_f32; BUFFER_SIZE],
+            buffer_out: [0_f32; BUFFER_SIZE]
+        }
+    }
+
     fn process_gate_engaged(&mut self, config: &SynthConfig) {
         self.state = match &self.state {
             EnvelopeState::Attacking => {
@@ -118,7 +134,7 @@ impl Envelope {
 
 impl Node for Envelope {
     fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>, _config: &SynthConfig) {
-        let buffer_in = match buffers.get(&String::from("in")) {
+        let buffer_in = match buffers.get(&String::from("out")) {
             Some(gate) => &gate,
             None => &[0_f32; BUFFER_SIZE]
         };
