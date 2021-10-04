@@ -33,7 +33,7 @@ pub struct Envelope {
 impl Envelope {
     fn process_gate_engaged(&mut self, config: &SynthConfig) {
         self.state = match &self.state {
-            Attacking => {
+            EnvelopeState::Attacking => {
                 let attack_rate = (1.0 / config.samples_per_second as f32) / self.attack;
                 self.amplitude_position += attack_rate;
 
@@ -49,7 +49,7 @@ impl Envelope {
                     EnvelopeState::Attacking
                 }                
             }
-            Decaying => {
+            EnvelopeState::Decaying => {
                 let decay_rate = (1.0 / config.samples_per_second as f32) / self.decay;
                 self.amplitude_position += decay_rate;
 
@@ -64,12 +64,12 @@ impl Envelope {
                     EnvelopeState::Decaying
                 }                
             }
-            Sustaining => {
+            EnvelopeState::Sustaining => {
                 self.current_amplitude = self.sustain;
 
                 EnvelopeState::Sustaining
             }
-            Releasing => {
+            EnvelopeState::Releasing => {
                 self.amplitude_position = 0.0;
                 self.amplitude_anchor = self.current_amplitude;
 
@@ -80,26 +80,26 @@ impl Envelope {
 
     fn process_gate_released(&mut self, config: &SynthConfig) {
         self.state = match &self.state {
-            Attacking => {
+            EnvelopeState::Attacking => {
                 // must have been released, as state is attacking and gate is off
                 self.amplitude_position = 0.0;
                 self.amplitude_anchor = self.current_amplitude;
 
                 EnvelopeState::Releasing
             }
-            Decaying => {
+            EnvelopeState::Decaying => {
                 self.amplitude_position = 0.0;
                 self.amplitude_anchor = self.current_amplitude;
 
                 EnvelopeState::Releasing              
             }
-            Sustaining => {
+            EnvelopeState::Sustaining => {
                 self.amplitude_position = 0.0;
                 self.amplitude_anchor = self.current_amplitude;
 
                 EnvelopeState::Releasing
             }
-            Releasing => {
+            EnvelopeState::Releasing => {
                 let release_rate = (1.0 / config.samples_per_second as f32) / self.release;
 
                 self.amplitude_position += release_rate;
@@ -117,13 +117,13 @@ impl Envelope {
 }
 
 impl Node for Envelope {
-    fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>, config: &SynthConfig) {
-        let mut buffer_in = match buffers.get(&String::from("in")) {
+    fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>, _config: &SynthConfig) {
+        let buffer_in = match buffers.get(&String::from("in")) {
             Some(gate) => &gate,
             None => &[0_f32; BUFFER_SIZE]
         };
         
-        let mut buffer_gate = match buffers.get(&String::from("gate")) {
+        let buffer_gate = match buffers.get(&String::from("gate")) {
             Some(gate) => &gate,
             None => &[0_f32; BUFFER_SIZE]
         };
@@ -146,7 +146,7 @@ impl Node for Envelope {
         }
     }    
 
-    fn map_outputs(&mut self, config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
+    fn map_outputs(&mut self, _config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
         let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
 
         // TODO: this probably is not efficient
