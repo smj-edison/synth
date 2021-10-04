@@ -1,5 +1,5 @@
 pub mod node;
-
+pub mod backend;
 pub mod config {
     pub struct SynthConfig {
         pub samples_per_second: u32
