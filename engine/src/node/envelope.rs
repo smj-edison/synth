@@ -9,8 +9,7 @@ pub enum EnvelopeState {
     Attacking,
     Decaying,
     Sustaining,
-    Releasing,
-    None
+    Releasing
 }
 
 pub struct Envelope {
@@ -19,8 +18,12 @@ pub struct Envelope {
     sustain: f32,
     release: f32,
     state: EnvelopeState,
+    amplitude_position: f32, // between 0 and 1
+    // amplitude_anchor is the spot where the attack is being based on
+    // if the note was pressed down again before a complete release, it should attack
+    // based on the current amplitude, not jump to 0
+    amplitude_anchor: f32, // between 0 and 1
     current_amplitude: f32, // between 0 and 1
-    last_gate: bool,
     buffer_gate: [f32; BUFFER_SIZE],
     buffer_in: [f32; BUFFER_SIZE],
     buffer_out: [f32; BUFFER_SIZE]
@@ -33,10 +36,13 @@ impl Envelope {
             Attacking => {
                 let attack_rate = (1.0 / config.samples_per_second as f32) / self.attack;
 
-                self.current_amplitude += attack_rate;
+                self.amplitude_position += attack_rate;
+                // take `self.attack` seconds, even if attack started from not complete release
+                self.current_amplitude = attack(self.amplitude_anchor, 1.0, self.amplitude_position);
 
                 if self.current_amplitude >= 1.0 {
                     self.current_amplitude = 1.0;
+                    self.amplitude_position = 0; // reset amplitude position for decay
 
                     EnvelopeState::Decaying
                 } else {
@@ -44,7 +50,7 @@ impl Envelope {
                 }                
             }
             Decaying => {
-                let decay_rate = (1.0 / config.samples_per_second as f32) / self.decay / (1.0 - self.sustain);
+                let attack_rate = (1.0 / config.samples_per_second as f32) / self.attack;
 
                 self.current_amplitude -= decay_rate;
 
@@ -57,9 +63,33 @@ impl Envelope {
                 }                
             }
             Sustaining => {
+                self.current_amplitude = self.sustain;
+
                 EnvelopeState::Sustaining
             }
             Releasing => {
+                self.amplitude_position = inv_attack(self.current_amplitude.clamp(0.0, 1.0), 0.0, 1.0);
+                self.amplitude_anchor = self.current_amplitude;
+
+                EnvelopeState::Attacking
+            }
+        }
+    }
+
+    fn process_gate_released(&mut self, config: &SynthConfig) {
+        self.state = match &self.state {
+            Attacking => {
+                EnvelopeState::Releasing
+            }
+            Decaying => {
+                EnvelopeState::Releasing              
+            }
+            Sustaining => {
+                EnvelopeState::Releasing
+            }
+            Releasing => {
+                let release_rate = (1.0 / config.samples_per_second as f32) / self.decay / (self.sustain);
+
                 EnvelopeState::Releasing
             }
         }
@@ -86,8 +116,10 @@ impl Node for Envelope {
         for i in 0..self.buffer_gate.len() {
             let engaged = self.buffer_gate[i] > 0.0;
 
-            if(engaged) {
-                self.process_gate_engaged();
+            if engaged {
+                self.process_gate_engaged(config);
+            } else {
+                self.process_gate_released(config);
             }
 
             self.buffer_out[i] = self.buffer_in[i] * self.current_amplitude;
@@ -106,3 +138,26 @@ impl Node for Envelope {
         outputs
     }
 }
+
+fn attack(start: f32, end: f32, amount: f32) -> f32 {
+    lerp(start, end, amount)
+}
+
+fn inv_attack(value: f32, start: f32, end: f32) -> f32 {
+    inv_lerp(value, start, end)
+}
+
+fn decay(start: f32, end: f32, amount: f32) -> f32 {
+    lerp(start, end, amount)
+}
+
+
+fn lerp(start: f32, end: f32, amount: f32) -> f32 {
+    (end - start) * amount + start
+}
+
+fn inv_lerp(value: f32, start: f32, end: f32) -> f32 {
+    // TODO: it's a possibility that start = end, which would result in a panic
+    (value - start) / (end - start)
+}
+
