@@ -5,56 +5,68 @@ use engine::constants::BUFFER_SIZE;
 
 use engine::config::SynthConfig;
 use engine::node::Node;
-use engine::node::oscillator::TriangleOscillatorNode;
+use engine::node::oscillator::SawOscillatorNode;
 use engine::node::envelope::Envelope;
 use engine::backend::{AudioClientBackend, pulse::PulseClientBackend};
 
 //use engine::backend::
 
+fn connect_backend() -> Box<dyn AudioClientBackend> {
+    let mut backend:Box<dyn AudioClientBackend> = Box::new(PulseClientBackend::new());
+    backend.connect();
+
+    backend
+}
+
+fn create_test_envelope() -> Envelope {
+    Envelope::new(
+        0.2,
+        0.3,
+        0.5,
+        1.0
+    )
+}
+
+fn create_test_oscillator() -> SawOscillatorNode {
+    SawOscillatorNode::new()
+}
+
+fn one_sample(envelope: &mut Envelope, osc: &mut SawOscillatorNode, synth_config: &SynthConfig, gate: f32) -> [f32; BUFFER_SIZE] {
+    osc.process(&synth_config);
+
+    let mut OOEI = osc.map_outputs(&synth_config); // oscillator out envelope in
+    
+    OOEI.insert(String::from("gate"), [gate; BUFFER_SIZE]);
+
+    envelope.map_inputs(&OOEI, &synth_config);
+    envelope.process(&synth_config);
+
+    let mut arr_out = [0_f32; BUFFER_SIZE];
+
+    arr_out.clone_from(envelope.map_outputs(&synth_config).get(&String::from("out")).unwrap());
+
+    arr_out
+}
+
 fn main() {
-    let gate = 
-        [1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 1_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32, 0_f32];
+    let backend = connect_backend();
 
-    // let mut backend:Box<dyn AudioClientBackend> = Box::new(PulseClientBackend::new());
-    // backend.connect();
-
-    let mut envelope = Envelope::new(
-        150.0 / 48000.0,
-        50.0 / 48000.0,
-        0.8,
-        100.0 / 48000.0
-    );
-
-    let mut noise = [1_f32; 512];
-
-    let mut buffers:HashMap<String, [f32; BUFFER_SIZE]> = HashMap::new();
-
-    buffers.insert(String::from("out"), [1_f32; BUFFER_SIZE]);
-    buffers.insert(String::from("gate"), gate);
+    let mut osc = create_test_oscillator();
+    let mut envelope = create_test_envelope();
 
     let synth_config = SynthConfig {
         samples_per_second: 48000
     };
 
-    envelope.map_inputs(&buffers, &synth_config);
-    envelope.process(&synth_config);
-    let buffer_out = envelope.map_outputs(&synth_config);
+    let test = one_sample(&mut envelope, &mut osc, &synth_config, 1.0);
 
-    println!("{:?}", buffer_out);
+    for i in 0..3 {
+        let test = one_sample(&mut envelope, &mut osc, &synth_config, 1.0);
+        backend.write(&test);
+    }
 
-    // for i in 0..3 {
-    //     osc.process(&synth_config);
-    //     let mut buffer_out = osc.map_outputs(&synth_config);
-
-    //     backend.write(buffer_out.entry(String::from("out")).or_insert(silence));
-    // }
-
-    // loop {
-    //     osc.process(&synth_config);
-    //     let mut buffer_out = osc.map_outputs(&synth_config);
-
-    //     backend.write(buffer_out.entry(String::from("out")).or_insert(silence));
-
-    //     thread::sleep(Duration::from_millis(((BUFFER_SIZE as u32) / synth_config.samples_per_second).into()));
-    // }
+    loop {
+        let test = one_sample(&mut envelope, &mut osc, &synth_config, 1.0);
+        backend.write(&test);
+    }
 }
