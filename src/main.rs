@@ -20,9 +20,9 @@ fn connect_backend() -> Box<dyn AudioClientBackend> {
 
 fn create_test_envelope() -> Envelope {
     Envelope::new(
-        0.2,
+        0.01,
         0.3,
-        0.5,
+        0.3,
         1.0
     )
 }
