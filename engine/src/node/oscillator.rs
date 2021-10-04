@@ -52,11 +52,11 @@ impl Node for SinOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>, config: &SynthConfig) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>, _config: &SynthConfig) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&mut self, config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
+    fn map_outputs(&mut self, _config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
         let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
 
         // TODO: this probably is not efficient
@@ -105,11 +105,11 @@ impl Node for SawOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>, config: &SynthConfig) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>, _config: &SynthConfig) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&mut self, config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
+    fn map_outputs(&mut self, _config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
         let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
 
         // TODO: this probably is not efficient
@@ -163,11 +163,11 @@ impl Node for SquareOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>, config: &SynthConfig) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>, _config: &SynthConfig) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&mut self, config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
+    fn map_outputs(&mut self, _config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
         let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
 
         // TODO: this probably is not efficient
@@ -223,11 +223,11 @@ impl Node for TriangleOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>, config: &SynthConfig) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>, _config: &SynthConfig) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&mut self, config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
+    fn map_outputs(&mut self, _config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
         let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
 
         // TODO: this probably is not efficient
