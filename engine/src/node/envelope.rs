@@ -70,7 +70,7 @@ impl Envelope {
                 EnvelopeState::Sustaining
             }
             Releasing => {
-                self.amplitude_position = inv_attack(self.current_amplitude.clamp(0.0, 1.0), 0.0, 1.0);
+                self.amplitude_position = 0.0;
                 self.amplitude_anchor = self.current_amplitude;
 
                 EnvelopeState::Attacking
@@ -82,25 +82,33 @@ impl Envelope {
         self.state = match &self.state {
             Attacking => {
                 // must have been released, as state is attacking and gate is off
-                self.amplitude_position = inv_release(self.current_amplitude.clamp(0.0, 1.0), 1.0, 0.0);
+                self.amplitude_position = 0.0;
                 self.amplitude_anchor = self.current_amplitude;
 
                 EnvelopeState::Releasing
             }
             Decaying => {
-                self.amplitude_position = inv_release(self.current_amplitude.clamp(0.0, 1.0), 1.0, 0.0);
+                self.amplitude_position = 0.0;
                 self.amplitude_anchor = self.current_amplitude;
 
                 EnvelopeState::Releasing              
             }
             Sustaining => {
-                self.amplitude_position = inv_release(self.current_amplitude.clamp(0.0, 1.0), 1.0, 0.0);
+                self.amplitude_position = 0.0;
                 self.amplitude_anchor = self.current_amplitude;
 
                 EnvelopeState::Releasing
             }
             Releasing => {
-                let release_rate = (1.0 / config.samples_per_second as f32) / self.decay / (self.sustain);
+                let release_rate = (1.0 / config.samples_per_second as f32) / self.release;
+
+                self.amplitude_position += release_rate;
+
+                // take `self.attack` seconds, even if attack started from not complete release
+                if self.amplitude_position <= 1.0 {
+                    self.current_amplitude = release(self.amplitude_anchor, 0.0, self.amplitude_position);
+                    self.current_amplitude = self.current_amplitude.clamp(0.0, 1.0);
+                }                
 
                 EnvelopeState::Releasing
             }
@@ -155,10 +163,6 @@ fn attack(start: f32, end: f32, amount: f32) -> f32 {
     lerp(start, end, amount)
 }
 
-fn inv_attack(value: f32, start: f32, end: f32) -> f32 {
-    inv_lerp(value, start, end)
-}
-
 fn decay(start: f32, end: f32, amount: f32) -> f32 {
     lerp(start, end, amount)
 }
@@ -167,17 +171,7 @@ fn release(start: f32, end: f32, amount: f32) -> f32 {
     lerp(start, end, amount)
 }
 
-fn inv_release(value: f32, start: f32, end: f32) -> f32 {
-    inv_lerp(value, start, end)
-}
-
 
 fn lerp(start: f32, end: f32, amount: f32) -> f32 {
     (end - start) * amount + start
 }
-
-fn inv_lerp(value: f32, start: f32, end: f32) -> f32 {
-    // TODO: it's a possibility that start = end, which would result in a panic
-    (value - start) / (end - start)
-}
-
