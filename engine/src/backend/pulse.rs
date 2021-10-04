@@ -22,18 +22,18 @@ impl PulseClientBackend {
 impl AudioClientBackend for PulseClientBackend {
     fn connect(&mut self) -> Result<(), Box<dyn Error>> {
         let spec = Spec {
-            format: pulse::sample::Format::S16NE,
-            channels: 2,
+            format: pulse::sample::Format::U8,
+            channels: 1,
             rate: 48_000, // FIXME: This should be passed in
         };
         assert!(spec.is_valid());
 
         let s = Simple::new(
             None,                // Use the default server
-            "Synthesizer Test",  // Our application’s name
-            Direction::Playback, // We want a playback stream
-            None,                // Use the default device
-            "Music",             // Description of our stream
+            "Synthesizer Test",    // Our application’s name
+            Direction::Playback,    // We want a playback stream
+            None,                   // Use the default device
+            "Music",         // Description of our stream
             &spec,               // Our sample format
             None,                // Use default channel map
             None                 // Use default buffering attributes

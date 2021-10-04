@@ -1,4 +1,4 @@
-mod pulse;
+pub mod pulse;
 
 use std::error::Error;
 
