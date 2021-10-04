@@ -1,4 +1,5 @@
 pub mod oscillator;
+pub mod envelope;
 
 use crate::config::SynthConfig;
 use crate::constants::BUFFER_SIZE;
