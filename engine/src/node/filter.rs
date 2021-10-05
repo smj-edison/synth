@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::config::SynthConfig;
-use crate::constants::{BUFFER_SIZE, TWO_PI};
+use crate::constants::{BUFFER_SIZE, TWO_PI, SAMPLE_RATE};
 
 use crate::node::Node;
 
@@ -31,7 +31,7 @@ pub struct Filter {
 }
 
 impl Node for Filter {
-    fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>, _config: &SynthConfig) {
+    fn map_inputs(&mut self, buffers: &HashMap<String, &[f32; BUFFER_SIZE]>) {
         let buffer_in = match buffers.get(&String::from("out")) {
             Some(gate) => &gate,
             None => &[0_f32; BUFFER_SIZE]
@@ -40,9 +40,9 @@ impl Node for Filter {
         self.buffer_in.clone_from(buffer_in);
     }
 
-    fn process(&mut self, config: &SynthConfig) {
+    fn process(&mut self) {
         if self.dirty {
-            self.recompute(&config);
+            self.recompute();
         }
 
         for i in 0..BUFFER_SIZE {
@@ -65,13 +65,14 @@ impl Node for Filter {
         }
     }
 
-    fn map_outputs(&mut self, _config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
+    fn map_outputs(&self) -> HashMap<String, &[f32; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, &[f32; BUFFER_SIZE]> = HashMap::new();
 
         // TODO: this probably is not efficient
-        let buffer_out = std::mem::replace(&mut self.buffer_out, [0_f32; BUFFER_SIZE]);
+        let mut buffer_out = [0_f32; BUFFER_SIZE];
+        buffer_out.clone_from(&self.buffer_out);
         
-        outputs.insert(String::from("out"), buffer_out);
+        outputs.insert(String::from("out"), &buffer_out);
         
         //outputs
         outputs
@@ -100,14 +101,14 @@ impl Filter {
             dirty: true
         };
 
-        new_filter.recompute(&synth_config);
+        new_filter.recompute();
 
         new_filter
     }
 
-    fn recompute(&mut self, synth_config: &SynthConfig) {
+    fn recompute(&mut self,) {
         let a = 10_f32.powf(self.db_gain / 40.0);
-        let omega = TWO_PI * self.frequency / synth_config.samples_per_second as f32;
+        let omega = TWO_PI * self.frequency / SAMPLE_RATE as f32;
         let sn = omega.sin();
         let cs = omega.cos();
         let alpha = sn / (2.0 * self.q);

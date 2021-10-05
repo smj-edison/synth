@@ -1,5 +1,4 @@
-use crate::config::SynthConfig;
-use crate::constants::{BUFFER_SIZE, TWO_PI};
+use crate::constants::{BUFFER_SIZE, TWO_PI, SAMPLE_RATE};
 
 use crate::node::Node;
 
@@ -39,8 +38,8 @@ impl Oscillator for SinOscillatorNode {
 }
 
 impl Node for SinOscillatorNode {
-    fn process(&mut self, config: &SynthConfig) {
-        let phase_advance = self.frequency / (config.samples_per_second as f32) * TWO_PI;
+    fn process(&mut self) {
+        let phase_advance = self.frequency / (SAMPLE_RATE as f32) * TWO_PI;
 
         let mut buffer_out = [0_f32; BUFFER_SIZE];
 
@@ -52,17 +51,18 @@ impl Node for SinOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>, _config: &SynthConfig) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, &[f32; BUFFER_SIZE]>) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&mut self, _config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
+    fn map_outputs(&self) -> HashMap<String, &[f32; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, &[f32; BUFFER_SIZE]> = HashMap::new();
 
         // TODO: this probably is not efficient
-        let buffer_out = std::mem::replace(&mut self.buffer_out, [0_f32; BUFFER_SIZE]);
+        let mut buffer_out = [0_f32; BUFFER_SIZE];
+        buffer_out.clone_from(&self.buffer_out);
         
-        outputs.insert(String::from("out"), buffer_out);
+        outputs.insert(String::from("out"), &buffer_out);
         
         //outputs
         outputs
@@ -92,8 +92,8 @@ impl Oscillator for SawOscillatorNode {
 }
 
 impl Node for SawOscillatorNode {
-    fn process(&mut self, config: &SynthConfig) {
-        let phase_advance = self.frequency / (config.samples_per_second as f32);
+    fn process(&mut self) {
+        let phase_advance = self.frequency / (SAMPLE_RATE as f32);
 
         let mut buffer_out = [0_f32; BUFFER_SIZE];
 
@@ -105,17 +105,18 @@ impl Node for SawOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>, _config: &SynthConfig) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, &[f32; BUFFER_SIZE]>) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&mut self, _config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
+    fn map_outputs(&self) -> HashMap<String, &[f32; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, &[f32; BUFFER_SIZE]> = HashMap::new();
 
         // TODO: this probably is not efficient
-        let buffer_out = std::mem::replace(&mut self.buffer_out, [0_f32; BUFFER_SIZE]);
+        let mut buffer_out = [0_f32; BUFFER_SIZE];
+        buffer_out.clone_from(&self.buffer_out);
         
-        outputs.insert(String::from("out"), buffer_out);
+        outputs.insert(String::from("out"), &buffer_out);
         
         //outputs
         outputs
@@ -150,8 +151,8 @@ impl Oscillator for SquareOscillatorNode {
 }
 
 impl Node for SquareOscillatorNode {
-    fn process(&mut self, config: &SynthConfig) {
-        let phase_advance = self.frequency / (config.samples_per_second as f32);
+    fn process(&mut self) {
+        let phase_advance = self.frequency / (SAMPLE_RATE as f32);
 
         let mut buffer_out = [0_f32; BUFFER_SIZE];
 
@@ -163,17 +164,18 @@ impl Node for SquareOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>, _config: &SynthConfig) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, &[f32; BUFFER_SIZE]>) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&mut self, _config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
+    fn map_outputs(&self) -> HashMap<String, &[f32; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, &[f32; BUFFER_SIZE]> = HashMap::new();
 
         // TODO: this probably is not efficient
-        let buffer_out = std::mem::replace(&mut self.buffer_out, [0_f32; BUFFER_SIZE]);
+        let mut buffer_out = [0_f32; BUFFER_SIZE];
+        buffer_out.clone_from(&self.buffer_out);
         
-        outputs.insert(String::from("out"), buffer_out);
+        outputs.insert(String::from("out"), &buffer_out);
         
         //outputs
         outputs
@@ -203,8 +205,8 @@ impl Oscillator for TriangleOscillatorNode {
 }
 
 impl Node for TriangleOscillatorNode {
-    fn process(&mut self, config: &SynthConfig) {
-        let phase_advance = self.frequency / (config.samples_per_second as f32);
+    fn process(&mut self) {
+        let phase_advance = self.frequency / (SAMPLE_RATE as f32);
 
         let mut buffer_out = [0_f32; BUFFER_SIZE];
 
@@ -223,17 +225,18 @@ impl Node for TriangleOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>, _config: &SynthConfig) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, &[f32; BUFFER_SIZE]>) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&mut self, _config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
+    fn map_outputs(&self) -> HashMap<String, &[f32; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, &[f32; BUFFER_SIZE]> = HashMap::new();
 
         // TODO: this probably is not efficient
-        let buffer_out = std::mem::replace(&mut self.buffer_out, [0_f32; BUFFER_SIZE]);
+        let mut buffer_out = [0_f32; BUFFER_SIZE];
+        buffer_out.clone_from(&self.buffer_out);
         
-        outputs.insert(String::from("out"), buffer_out);
+        outputs.insert(String::from("out"), &buffer_out);
         
         //outputs
         outputs

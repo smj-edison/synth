@@ -37,23 +37,23 @@ fn create_test_filter(synth_config: &SynthConfig) -> Filter {
 }
 
 fn one_sample(envelope: &mut Envelope, osc: &mut SawOscillatorNode, filter: &mut Filter, synth_config: &SynthConfig, gate: f32) -> [f32; BUFFER_SIZE] {
-    osc.process(&synth_config);
+    osc.process();
 
-    let mut OOEI = osc.map_outputs(&synth_config); // oscillator out envelope in
+    let mut OOEI = osc.map_outputs(); // oscillator out envelope in
     
-    OOEI.insert(String::from("gate"), [gate; BUFFER_SIZE]);
+    OOEI.insert(String::from("gate"), &[gate; BUFFER_SIZE]);
 
-    envelope.map_inputs(&OOEI, &synth_config);
-    envelope.process(&synth_config);
+    envelope.map_inputs(&OOEI);
+    envelope.process();
 
-    let EOFI = envelope.map_outputs(&synth_config); // envelope out filter in
+    let EOFI = envelope.map_outputs(); // envelope out filter in
 
-    filter.map_inputs(&EOFI, &synth_config);
-    filter.process(&synth_config);
+    filter.map_inputs(&EOFI);
+    filter.process();
 
     let mut arr_out = [0_f32; BUFFER_SIZE];
 
-    arr_out.clone_from(filter.map_outputs(&synth_config).get(&String::from("out")).unwrap());
+    arr_out.clone_from(filter.map_outputs().get(&String::from("out")).unwrap());
 
     arr_out
 }

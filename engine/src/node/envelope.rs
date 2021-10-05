@@ -1,5 +1,4 @@
-use crate::config::SynthConfig;
-use crate::constants::BUFFER_SIZE;
+use crate::constants::{BUFFER_SIZE, SAMPLE_RATE};
 
 use crate::node::Node;
 
@@ -47,10 +46,10 @@ impl Envelope {
         }
     }
 
-    fn process_gate_engaged(&mut self, config: &SynthConfig) {
+    fn process_gate_engaged(&mut self) {
         self.state = match &self.state {
             EnvelopeState::Attacking => {
-                let attack_rate = (1.0 / config.samples_per_second as f32) / self.attack;
+                let attack_rate = (1.0 / SAMPLE_RATE as f32) / self.attack;
                 self.amplitude_position += attack_rate;
 
                 // take `self.attack` seconds, even if attack started from not complete release
@@ -66,7 +65,7 @@ impl Envelope {
                 }                
             }
             EnvelopeState::Decaying => {
-                let decay_rate = (1.0 / config.samples_per_second as f32) / self.decay;
+                let decay_rate = (1.0 / SAMPLE_RATE as f32) / self.decay;
                 self.amplitude_position += decay_rate;
 
                 self.current_amplitude = decay(1.0, self.sustain, self.amplitude_position);
@@ -94,7 +93,7 @@ impl Envelope {
         }
     }
 
-    fn process_gate_released(&mut self, config: &SynthConfig) {
+    fn process_gate_released(&mut self) {
         self.state = match &self.state {
             EnvelopeState::Attacking => {
                 // must have been released, as state is attacking and gate is off
@@ -116,7 +115,7 @@ impl Envelope {
                 EnvelopeState::Releasing
             }
             EnvelopeState::Releasing => {
-                let release_rate = (1.0 / config.samples_per_second as f32) / self.release;
+                let release_rate = (1.0 / SAMPLE_RATE as f32) / self.release;
 
                 self.amplitude_position += release_rate;
 
@@ -133,14 +132,14 @@ impl Envelope {
 }
 
 impl Node for Envelope {
-    fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>, _config: &SynthConfig) {
+    fn map_inputs(&mut self, buffers: &HashMap<String, &[f32; BUFFER_SIZE]>) {
         let buffer_in = match buffers.get(&String::from("out")) {
-            Some(gate) => &gate,
+            Some(gate) => gate,
             None => &[0_f32; BUFFER_SIZE]
         };
         
         let buffer_gate = match buffers.get(&String::from("gate")) {
-            Some(gate) => &gate,
+            Some(gate) => gate,
             None => &[0_f32; BUFFER_SIZE]
         };
 
@@ -148,27 +147,28 @@ impl Node for Envelope {
         self.buffer_gate.clone_from(buffer_gate);
     }
 
-    fn process(&mut self, config: &SynthConfig) {
+    fn process(&mut self) {
         for i in 0..self.buffer_gate.len() {
             let engaged = self.buffer_gate[i] > 0.0;
 
             if engaged {
-                self.process_gate_engaged(config);
+                self.process_gate_engaged();
             } else {
-                self.process_gate_released(config);
+                self.process_gate_released();
             }
 
             self.buffer_out[i] = self.buffer_in[i] * self.current_amplitude;
         }
     }    
 
-    fn map_outputs(&mut self, _config: &SynthConfig) -> HashMap<String, [f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
+    fn map_outputs(&self) -> HashMap<String, &[f32; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, &[f32; BUFFER_SIZE]> = HashMap::new();
 
         // TODO: this probably is not efficient
-        let buffer_out = std::mem::replace(&mut self.buffer_out, [0_f32; BUFFER_SIZE]);
+        let mut buffer_out = [0_f32; BUFFER_SIZE];
+        buffer_out.clone_from(&self.buffer_out);
         
-        outputs.insert(String::from("out"), buffer_out);
+        outputs.insert(String::from("out"), &buffer_out);
         
         //outputs
         outputs
