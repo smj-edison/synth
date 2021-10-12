@@ -2,6 +2,7 @@ pub mod oscillator;
 pub mod envelope;
 pub mod filter;
 pub mod dummy;
+pub mod gain;
 
 use std::ptr;
 
@@ -42,6 +43,16 @@ impl dyn Node {
         }        
 
         self.map_inputs(&mixed_buffer);
+        self.process();
+    }
+
+    pub fn receive_and_process(&mut self, from: &dyn Node) {
+        self.receive(from);
+        self.process();
+    }
+
+    pub fn receive_multiple_and_process<'a>(&mut self, from_list: Vec<(&'a dyn Node, String, String)>) {
+        self.receive_multiple(from_list);
         self.process();
     }
 }

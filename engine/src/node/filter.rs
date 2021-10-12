@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use crate::constants::{BUFFER_SIZE, TWO_PI, SAMPLE_RATE};
+use crate::constants::{BUFFER_SIZE, PI, SAMPLE_RATE};
 
 use crate::node::Node;
 
@@ -13,7 +13,6 @@ pub struct Filter {
     filter_type: FilterType,
     frequency: f32,
     q: f32,
-    db_gain: f32,
     dirty: bool,
     a1: f32,
     a2: f32,
@@ -74,12 +73,11 @@ impl Node for Filter {
 }
 
 impl Filter {
-    pub fn new(filter_type: FilterType, frequency: f32, q: f32, db_gain: f32) -> Filter {
+    pub fn new(filter_type: FilterType, frequency: f32, q: f32) -> Filter {
         let mut new_filter = Filter {
             filter_type: filter_type,
             frequency: frequency,
             q: q,
-            db_gain: db_gain,
             a1: 0.0,
             a2: 0.0,
             b0: 0.0,
@@ -99,37 +97,25 @@ impl Filter {
         new_filter
     }
 
-    fn recompute(&mut self,) {
-        let a = 10_f32.powf(self.db_gain / 40.0);
-        let omega = TWO_PI * self.frequency / SAMPLE_RATE as f32;
-        let sn = omega.sin();
-        let cs = omega.cos();
-        let alpha = sn / (2.0 * self.q);
-        let _beta = (a * a).sqrt();
+    fn recompute(&mut self) {
+        let k = (PI * self.frequency / SAMPLE_RATE as f32).tan();
+        let norm = 1.0 / (1.0 + k / self.q + k * k);
 
-        let norm;
-        let mut a1;
-        let mut a2;
-        let mut b0;
-        let mut b1;
-        let mut b2;
+        let a1;
+        let a2;
+        let b0;
+        let b1;
+        let b2;
 
         match &self.filter_type {
             FilterType::Lowpass => {
-                b0 = (1.0 - cs) / 2.0;
-                b1 = 1.0 - cs;
-                b2 = (1.0 - cs) / 2.0;
-                norm = 1.0 + alpha;
-                a1 = -2.0 * cs;
-                a2 = 1.0 - alpha;
+                b0 = k * k * norm;
+                b1 = 2.0 * b0;
+                b2 = b0;
+                a1 = 2.0 * (k * k - 1.0) * norm;
+                a2 = (1.0 - k / self.q + k * k) * norm;
             }
         };
-        
-        a1 /= norm;
-        a2 /= norm;
-        b0 /= norm;
-        b1 /= norm;
-        b2 /= norm;
 
         self.a1 = a1;
         self.a2 = a2;
@@ -148,7 +134,4 @@ impl Filter {
 
     pub fn get_q(&self) -> f32 { self.q }
     pub fn set_q(&mut self, q: f32) { self.dirty = true; self.q = q; }
-
-    pub fn get_db_gain(&self) -> f32 { self.db_gain }
-    pub fn set_db_gain(&mut self, db_gain: f32) { self.dirty = true; self.db_gain = db_gain; }
 }

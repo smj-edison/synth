@@ -5,7 +5,7 @@ use pulse::stream::Direction;
 use psimple::Simple;
 
 use crate::backend::AudioClientBackend;
-use crate::constants::BUFFER_SIZE;
+use crate::constants::{BUFFER_SIZE, SAMPLE_RATE};
 
 pub struct PulseClientBackend {
     pub pulse_spec: Option<pulse::sample::Spec>,
@@ -25,7 +25,7 @@ impl AudioClientBackend for PulseClientBackend {
         let spec = Spec {
             format: pulse::sample::Format::F32le,
             channels: 1,
-            rate: 48_000, // FIXME: This should be passed in
+            rate: SAMPLE_RATE,
         };
         assert!(spec.is_valid());
 
@@ -51,6 +51,10 @@ impl AudioClientBackend for PulseClientBackend {
 
         // TODO: would memcpy work here faster?
         for i in 0..BUFFER_SIZE {
+            if data[i] > 1.0 || data[i] < -1.0 {
+                panic!("Clipping!");
+            }
+
             let num = data[i].to_le_bytes();
 
             data_out[i * 4 + 0] = num[0];
