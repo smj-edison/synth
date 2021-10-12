@@ -46,7 +46,7 @@ impl AudioClientBackend for PulseClientBackend {
         Ok(())
     }
 
-    fn write(&self, data: &[f32]) -> Result<(), Box<dyn Error>> {
+    fn write(&self, data: &[f64]) -> Result<(), Box<dyn Error>> {
         let mut data_out = [0_u8; BUFFER_SIZE * 4];
 
         // TODO: would memcpy work here faster?
@@ -55,7 +55,7 @@ impl AudioClientBackend for PulseClientBackend {
                 panic!("Clipping!");
             }
 
-            let num = data[i].to_le_bytes();
+            let num = (data[i] as f32).to_le_bytes();
 
             data_out[i * 4 + 0] = num[0];
             data_out[i * 4 + 1] = num[1];

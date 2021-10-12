@@ -41,7 +41,7 @@ fn create_test_gain() -> Gain {
     Gain::new()
 }
 
-fn one_sample(envelope: &mut Envelope, osc: &mut SinOscillatorNode, filter: &mut Filter, gain: &mut Gain, gate: f32) -> [f32; BUFFER_SIZE] {
+fn one_sample(envelope: &mut Envelope, osc: &mut SinOscillatorNode, filter: &mut Filter, gain: &mut Gain, gate: f64) -> [f64; BUFFER_SIZE] {
     let gate_sample = [gate; BUFFER_SIZE];
     let mut gate = Dummy::new();
 

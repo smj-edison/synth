@@ -5,8 +5,8 @@ use crate::node::Node;
 use std::collections::HashMap;
 
 pub trait Oscillator {
-    fn get_frequency(&self) -> f32;
-    fn set_frequency(&mut self, frequency: f32);
+    fn get_frequency(&self) -> f64;
+    fn set_frequency(&mut self, frequency: f64);
 }
 
 /// A sinsouid oscillator
@@ -17,31 +17,31 @@ pub trait Oscillator {
 /// # Outputs
 /// `out` - Mono waveform out.
 pub struct SinOscillatorNode {
-    phase: f32,
-    frequency: f32,
-    buffer_out: [f32; BUFFER_SIZE]
+    phase: f64,
+    frequency: f64,
+    buffer_out: [f64; BUFFER_SIZE]
 }
 
 impl SinOscillatorNode {
     pub fn new() -> SinOscillatorNode {
         SinOscillatorNode { 
-            phase: 0_f32,
-            frequency: 440_f32,
-            buffer_out: [0_f32; BUFFER_SIZE]
+            phase: 0_f64,
+            frequency: 440_f64,
+            buffer_out: [0_f64; BUFFER_SIZE]
         }
     }
 }
 
 impl Oscillator for SinOscillatorNode {
-    fn get_frequency(&self) -> f32 { self.frequency }
-    fn set_frequency(&mut self, frequency: f32) { self.frequency = frequency; }
+    fn get_frequency(&self) -> f64 { self.frequency }
+    fn set_frequency(&mut self, frequency: f64) { self.frequency = frequency; }
 }
 
 impl Node for SinOscillatorNode {
     fn process(&mut self) {
-        let phase_advance = self.frequency / (SAMPLE_RATE as f32) * TWO_PI;
+        let phase_advance = self.frequency / (SAMPLE_RATE as f64) * TWO_PI;
 
-        let mut buffer_out = [0_f32; BUFFER_SIZE];
+        let mut buffer_out = [0_f64; BUFFER_SIZE];
 
         for i in 0..BUFFER_SIZE {
             buffer_out[i] = self.phase.sin();
@@ -51,15 +51,15 @@ impl Node for SinOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&self) -> HashMap<String, [f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
+    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
 
         // TODO: this probably is not efficient
-        let mut buffer_out = [0_f32; BUFFER_SIZE];
+        let mut buffer_out = [0_f64; BUFFER_SIZE];
         buffer_out.clone_from(&self.buffer_out);
         
         outputs.insert(String::from("out"), buffer_out);
@@ -71,31 +71,31 @@ impl Node for SinOscillatorNode {
 
 
 pub struct SawOscillatorNode {
-    phase: f32,
-    frequency: f32,
-    buffer_out: [f32; BUFFER_SIZE]
+    phase: f64,
+    frequency: f64,
+    buffer_out: [f64; BUFFER_SIZE]
 }
 
 impl SawOscillatorNode {
     pub fn new() -> SawOscillatorNode {
         SawOscillatorNode { 
-            phase: 0_f32,
-            frequency: 440_f32,
-            buffer_out: [0_f32; BUFFER_SIZE]
+            phase: 0_f64,
+            frequency: 440_f64,
+            buffer_out: [0_f64; BUFFER_SIZE]
         }
     }
 }
 
 impl Oscillator for SawOscillatorNode {
-    fn get_frequency(&self) -> f32 { self.frequency }
-    fn set_frequency(&mut self, frequency: f32) { self.frequency = frequency; }
+    fn get_frequency(&self) -> f64 { self.frequency }
+    fn set_frequency(&mut self, frequency: f64) { self.frequency = frequency; }
 }
 
 impl Node for SawOscillatorNode {
     fn process(&mut self) {
-        let phase_advance = self.frequency / (SAMPLE_RATE as f32);
+        let phase_advance = self.frequency / (SAMPLE_RATE as f64);
 
-        let mut buffer_out = [0_f32; BUFFER_SIZE];
+        let mut buffer_out = [0_f64; BUFFER_SIZE];
 
         for i in 0..BUFFER_SIZE {
             buffer_out[i] = self.phase % 1.0;
@@ -105,12 +105,12 @@ impl Node for SawOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&self) -> HashMap<String, [f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
+    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
         
         outputs.insert(String::from("out"), self.buffer_out);
         
@@ -121,36 +121,36 @@ impl Node for SawOscillatorNode {
 
 
 pub struct SquareOscillatorNode {
-    phase: f32,
-    frequency: f32,
-    buffer_out: [f32; BUFFER_SIZE],
-    duty_cycle: f32
+    phase: f64,
+    frequency: f64,
+    buffer_out: [f64; BUFFER_SIZE],
+    duty_cycle: f64
 }
 
 impl SquareOscillatorNode {
     pub fn new() -> SquareOscillatorNode {
         SquareOscillatorNode { 
-            phase: 0_f32,
-            frequency: 440_f32,
-            buffer_out: [0_f32; BUFFER_SIZE],
+            phase: 0_f64,
+            frequency: 440_f64,
+            buffer_out: [0_f64; BUFFER_SIZE],
             duty_cycle: 0.5
         }
     }
 
-    pub fn set_duty_cycle(&mut self, duty_cycle: f32) { self.duty_cycle = duty_cycle; }
-    pub fn get_duty_cycle(&mut self) -> f32 { self.duty_cycle }
+    pub fn set_duty_cycle(&mut self, duty_cycle: f64) { self.duty_cycle = duty_cycle; }
+    pub fn get_duty_cycle(&mut self) -> f64 { self.duty_cycle }
 }
 
 impl Oscillator for SquareOscillatorNode {
-    fn get_frequency(&self) -> f32 { self.frequency }
-    fn set_frequency(&mut self, frequency: f32) { self.frequency = frequency; }
+    fn get_frequency(&self) -> f64 { self.frequency }
+    fn set_frequency(&mut self, frequency: f64) { self.frequency = frequency; }
 }
 
 impl Node for SquareOscillatorNode {
     fn process(&mut self) {
-        let phase_advance = self.frequency / (SAMPLE_RATE as f32);
+        let phase_advance = self.frequency / (SAMPLE_RATE as f64);
 
-        let mut buffer_out = [0_f32; BUFFER_SIZE];
+        let mut buffer_out = [0_f64; BUFFER_SIZE];
 
         for i in 0..BUFFER_SIZE {
             buffer_out[i] = if self.phase >= self.duty_cycle { 1.0 } else { -1.0 };
@@ -160,12 +160,12 @@ impl Node for SquareOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&self) -> HashMap<String, [f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
+    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
         
         outputs.insert(String::from("out"), self.buffer_out);
         
@@ -176,31 +176,31 @@ impl Node for SquareOscillatorNode {
 
 
 pub struct TriangleOscillatorNode {
-    phase: f32,
-    frequency: f32,
-    buffer_out: [f32; BUFFER_SIZE]
+    phase: f64,
+    frequency: f64,
+    buffer_out: [f64; BUFFER_SIZE]
 }
 
 impl TriangleOscillatorNode {
     pub fn new() -> TriangleOscillatorNode {
         TriangleOscillatorNode { 
-            phase: 0_f32,
-            frequency: 440_f32,
-            buffer_out: [0_f32; BUFFER_SIZE]
+            phase: 0_f64,
+            frequency: 440_f64,
+            buffer_out: [0_f64; BUFFER_SIZE]
         }
     }
 }
 
 impl Oscillator for TriangleOscillatorNode {
-    fn get_frequency(&self) -> f32 { self.frequency }
-    fn set_frequency(&mut self, frequency: f32) { self.frequency = frequency; }
+    fn get_frequency(&self) -> f64 { self.frequency }
+    fn set_frequency(&mut self, frequency: f64) { self.frequency = frequency; }
 }
 
 impl Node for TriangleOscillatorNode {
     fn process(&mut self) {
-        let phase_advance = self.frequency / (SAMPLE_RATE as f32);
+        let phase_advance = self.frequency / (SAMPLE_RATE as f64);
 
-        let mut buffer_out = [0_f32; BUFFER_SIZE];
+        let mut buffer_out = [0_f64; BUFFER_SIZE];
 
         for i in 0..BUFFER_SIZE {
             buffer_out[i] = if self.phase < 0.5 {
@@ -217,12 +217,12 @@ impl Node for TriangleOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&self) -> HashMap<String, [f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
+    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
         
         outputs.insert(String::from("out"), self.buffer_out);
         

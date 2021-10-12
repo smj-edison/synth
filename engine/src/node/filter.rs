@@ -11,27 +11,27 @@ pub enum FilterType {
 
 pub struct Filter {
     filter_type: FilterType,
-    frequency: f32,
-    q: f32,
+    frequency: f64,
+    q: f64,
     dirty: bool,
-    a1: f32,
-    a2: f32,
-    b0: f32,
-    b1: f32,
-    b2: f32,
-    prev_input_1: f32,
-    prev_input_2: f32,
-    prev_output_1: f32,
-    prev_output_2: f32,
-    buffer_in: [f32; BUFFER_SIZE],
-    buffer_out: [f32; BUFFER_SIZE]
+    a1: f64,
+    a2: f64,
+    b0: f64,
+    b1: f64,
+    b2: f64,
+    prev_input_1: f64,
+    prev_input_2: f64,
+    prev_output_1: f64,
+    prev_output_2: f64,
+    buffer_in: [f64; BUFFER_SIZE],
+    buffer_out: [f64; BUFFER_SIZE]
 }
 
 impl Node for Filter {
-    fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>) {
+    fn map_inputs(&mut self, buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
         let buffer_in = match buffers.get(&String::from("out")) {
             Some(gate) => &gate,
-            None => &[0_f32; BUFFER_SIZE]
+            None => &[0_f64; BUFFER_SIZE]
         };
 
         self.buffer_in.clone_from(buffer_in);
@@ -62,8 +62,8 @@ impl Node for Filter {
         }
     }
 
-    fn map_outputs(&self) -> HashMap<String, [f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
+    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
         
         outputs.insert(String::from("out"), self.buffer_out);
         
@@ -73,7 +73,7 @@ impl Node for Filter {
 }
 
 impl Filter {
-    pub fn new(filter_type: FilterType, frequency: f32, q: f32) -> Filter {
+    pub fn new(filter_type: FilterType, frequency: f64, q: f64) -> Filter {
         let mut new_filter = Filter {
             filter_type: filter_type,
             frequency: frequency,
@@ -87,8 +87,8 @@ impl Filter {
             prev_input_2: 0.0,
             prev_output_1: 0.0,
             prev_output_2: 0.0,
-            buffer_in: [0_f32; BUFFER_SIZE],
-            buffer_out: [0_f32; BUFFER_SIZE],
+            buffer_in: [0_f64; BUFFER_SIZE],
+            buffer_out: [0_f64; BUFFER_SIZE],
             dirty: true
         };
 
@@ -98,7 +98,7 @@ impl Filter {
     }
 
     fn recompute(&mut self) {
-        let k = (PI * self.frequency / SAMPLE_RATE as f32).tan();
+        let k = (PI * self.frequency / SAMPLE_RATE as f64).tan();
         let norm = 1.0 / (1.0 + k / self.q + k * k);
 
         let a1;
@@ -129,9 +129,9 @@ impl Filter {
     pub fn get_filter_type(&self) -> FilterType { self.filter_type }
     pub fn set_filter_type(&mut self, filter_type: FilterType) { self.dirty = true; self.filter_type = filter_type; }
 
-    pub fn get_frequency(&self) -> f32 { self.frequency }
-    pub fn set_frequency(&mut self, frequency: f32) { self.dirty = true; self.frequency = frequency; }
+    pub fn get_frequency(&self) -> f64 { self.frequency }
+    pub fn set_frequency(&mut self, frequency: f64) { self.dirty = true; self.frequency = frequency; }
 
-    pub fn get_q(&self) -> f32 { self.q }
-    pub fn set_q(&mut self, q: f32) { self.dirty = true; self.q = q; }
+    pub fn get_q(&self) -> f64 { self.q }
+    pub fn set_q(&mut self, q: f64) { self.dirty = true; self.q = q; }
 }

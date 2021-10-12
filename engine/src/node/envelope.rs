@@ -12,25 +12,25 @@ pub enum EnvelopeState {
 }
 
 pub struct Envelope {
-    attack: f32,
-    decay: f32,
-    sustain: f32,
-    release: f32,
+    attack: f64,
+    decay: f64,
+    sustain: f64,
+    release: f64,
     state: EnvelopeState,
-    amplitude_position: f32, // between 0 and 1
+    amplitude_position: f64, // between 0 and 1
     // amplitude_anchor is the spot where the attack is being based on
     // if the note was pressed down again before a complete release, it should attack
     // based on the current amplitude, not jump to 0
-    amplitude_anchor: f32, // between 0 and 1
-    current_amplitude: f32, // between 0 and 1
-    buffer_gate: [f32; BUFFER_SIZE],
-    buffer_in: [f32; BUFFER_SIZE],
-    buffer_out: [f32; BUFFER_SIZE]
+    amplitude_anchor: f64, // between 0 and 1
+    current_amplitude: f64, // between 0 and 1
+    buffer_gate: [f64; BUFFER_SIZE],
+    buffer_in: [f64; BUFFER_SIZE],
+    buffer_out: [f64; BUFFER_SIZE]
 }
 
 // TODO: ADSR linear only
 impl Envelope {
-    pub fn new(attack: f32, decay: f32, sustain: f32, release: f32) -> Envelope {
+    pub fn new(attack: f64, decay: f64, sustain: f64, release: f64) -> Envelope {
         Envelope {
             attack: attack,
             decay: decay,
@@ -40,16 +40,16 @@ impl Envelope {
             amplitude_position: 0.0,
             amplitude_anchor: 0.0,
             current_amplitude: 0.0,
-            buffer_gate: [0_f32; BUFFER_SIZE],
-            buffer_in: [0_f32; BUFFER_SIZE],
-            buffer_out: [0_f32; BUFFER_SIZE]
+            buffer_gate: [0_f64; BUFFER_SIZE],
+            buffer_in: [0_f64; BUFFER_SIZE],
+            buffer_out: [0_f64; BUFFER_SIZE]
         }
     }
 
     fn process_gate_engaged(&mut self) {
         self.state = match &self.state {
             EnvelopeState::Attacking => {
-                let attack_rate = (1.0 / SAMPLE_RATE as f32) / self.attack;
+                let attack_rate = (1.0 / SAMPLE_RATE as f64) / self.attack;
                 self.amplitude_position += attack_rate;
 
                 // take `self.attack` seconds, even if attack started from not complete release
@@ -65,7 +65,7 @@ impl Envelope {
                 }                
             }
             EnvelopeState::Decaying => {
-                let decay_rate = (1.0 / SAMPLE_RATE as f32) / self.decay;
+                let decay_rate = (1.0 / SAMPLE_RATE as f64) / self.decay;
                 self.amplitude_position += decay_rate;
 
                 self.current_amplitude = decay(1.0, self.sustain, self.amplitude_position);
@@ -115,7 +115,7 @@ impl Envelope {
                 EnvelopeState::Releasing
             }
             EnvelopeState::Releasing => {
-                let release_rate = (1.0 / SAMPLE_RATE as f32) / self.release;
+                let release_rate = (1.0 / SAMPLE_RATE as f64) / self.release;
 
                 self.amplitude_position += release_rate;
 
@@ -132,15 +132,15 @@ impl Envelope {
 }
 
 impl Node for Envelope {
-    fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>) {
+    fn map_inputs(&mut self, buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
         let buffer_in = match buffers.get(&String::from("out")) {
             Some(gate) => &gate,
-            None => &[0_f32; BUFFER_SIZE]
+            None => &[0_f64; BUFFER_SIZE]
         };
         
         let buffer_gate = match buffers.get(&String::from("gate")) {
             Some(gate) => &gate,
-            None => &[0_f32; BUFFER_SIZE]
+            None => &[0_f64; BUFFER_SIZE]
         };
 
         self.buffer_in.clone_from(buffer_in);
@@ -161,8 +161,8 @@ impl Node for Envelope {
         }
     }    
 
-    fn map_outputs(&self) -> HashMap<String, [f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
+    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
         
         outputs.insert(String::from("out"), self.buffer_out);
         
@@ -171,19 +171,19 @@ impl Node for Envelope {
     }
 }
 
-fn attack(start: f32, end: f32, amount: f32) -> f32 {
+fn attack(start: f64, end: f64, amount: f64) -> f64 {
     lerp(start, end, amount)
 }
 
-fn decay(start: f32, end: f32, amount: f32) -> f32 {
+fn decay(start: f64, end: f64, amount: f64) -> f64 {
     lerp(start, end, amount)
 }
 
-fn release(start: f32, end: f32, amount: f32) -> f32 {
+fn release(start: f64, end: f64, amount: f64) -> f64 {
     lerp(start, end, amount)
 }
 
 
-fn lerp(start: f32, end: f32, amount: f32) -> f32 {
+fn lerp(start: f64, end: f64, amount: f64) -> f64 {
     (end - start) * amount + start
 }

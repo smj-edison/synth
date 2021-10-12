@@ -12,8 +12,8 @@ use std::collections::HashMap;
 
 pub trait Node {
     fn process(&mut self);
-    fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>);
-    fn map_outputs(&self) -> HashMap<String, [f32; BUFFER_SIZE]>;
+    fn map_inputs(&mut self, buffers: &HashMap<String, [f64; BUFFER_SIZE]>);
+    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]>;
 }
 
 impl dyn Node {
@@ -25,16 +25,16 @@ impl dyn Node {
     }
 
     pub fn receive_multiple<'a>(&mut self, from_list: Vec<(&'a dyn Node, String, String)>) {
-        let mut mixed_buffer:HashMap<String, [f32; BUFFER_SIZE]> = HashMap::new();
+        let mut mixed_buffer:HashMap<String, [f64; BUFFER_SIZE]> = HashMap::new();
 
         for mapping in from_list {
             let incoming_buffers = mapping.0.map_outputs();
 
-            let mut buffer_copied = [0_f32; BUFFER_SIZE];
+            let mut buffer_copied = [0_f64; BUFFER_SIZE];
 
             let buffer = match incoming_buffers.get(&mapping.1) {
                 Some(buffer) => buffer,
-                None => &[0_f32; BUFFER_SIZE]
+                None => &[0_f64; BUFFER_SIZE]
             };
 
             buffer_copied.clone_from(buffer);
