@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use crate::config::SynthConfig;
 use crate::constants::{BUFFER_SIZE, TWO_PI, SAMPLE_RATE};
 
 use crate::node::Node;
@@ -16,7 +15,6 @@ pub struct Filter {
     q: f32,
     db_gain: f32,
     dirty: bool,
-    a0: f32,
     a1: f32,
     a2: f32,
     b0: f32,
@@ -31,7 +29,7 @@ pub struct Filter {
 }
 
 impl Node for Filter {
-    fn map_inputs(&mut self, buffers: &HashMap<String, &[f32; BUFFER_SIZE]>) {
+    fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>) {
         let buffer_in = match buffers.get(&String::from("out")) {
             Some(gate) => &gate,
             None => &[0_f32; BUFFER_SIZE]
@@ -65,14 +63,10 @@ impl Node for Filter {
         }
     }
 
-    fn map_outputs(&self) -> HashMap<String, &[f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, &[f32; BUFFER_SIZE]> = HashMap::new();
-
-        // TODO: this probably is not efficient
-        let mut buffer_out = [0_f32; BUFFER_SIZE];
-        buffer_out.clone_from(&self.buffer_out);
+    fn map_outputs(&self) -> HashMap<String, [f32; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
         
-        outputs.insert(String::from("out"), &buffer_out);
+        outputs.insert(String::from("out"), self.buffer_out);
         
         //outputs
         outputs
@@ -80,13 +74,12 @@ impl Node for Filter {
 }
 
 impl Filter {
-    pub fn new(filter_type: FilterType, frequency: f32, q: f32, db_gain: f32, synth_config: &SynthConfig) -> Filter {
+    pub fn new(filter_type: FilterType, frequency: f32, q: f32, db_gain: f32) -> Filter {
         let mut new_filter = Filter {
             filter_type: filter_type,
             frequency: frequency,
             q: q,
             db_gain: db_gain,
-            a0: 0.0,
             a1: 0.0,
             a2: 0.0,
             b0: 0.0,
@@ -112,9 +105,9 @@ impl Filter {
         let sn = omega.sin();
         let cs = omega.cos();
         let alpha = sn / (2.0 * self.q);
-        let beta = (a * a).sqrt();
+        let _beta = (a * a).sqrt();
 
-        let mut a0;
+        let norm;
         let mut a1;
         let mut a2;
         let mut b0;
@@ -126,19 +119,18 @@ impl Filter {
                 b0 = (1.0 - cs) / 2.0;
                 b1 = 1.0 - cs;
                 b2 = (1.0 - cs) / 2.0;
-                a0 = 1.0 + alpha;
+                norm = 1.0 + alpha;
                 a1 = -2.0 * cs;
                 a2 = 1.0 - alpha;
             }
         };
         
-        a1 /= a0;
-        a2 /= a0;
-        b0 /= a0;
-        b1 /= a0;
-        b2 /= a0;
+        a1 /= norm;
+        a2 /= norm;
+        b0 /= norm;
+        b1 /= norm;
+        b2 /= norm;
 
-        self.a0 = a0;
         self.a1 = a1;
         self.a2 = a2;
         self.b0 = b0;
@@ -148,15 +140,15 @@ impl Filter {
         self.dirty = false;
     }
 
-    fn get_filter_type(&self) -> FilterType { self.filter_type }
-    fn set_filter_type(&mut self, filter_type: FilterType) { self.dirty = true; self.filter_type = filter_type; }
+    pub fn get_filter_type(&self) -> FilterType { self.filter_type }
+    pub fn set_filter_type(&mut self, filter_type: FilterType) { self.dirty = true; self.filter_type = filter_type; }
 
-    fn get_frequency(&self) -> f32 { self.frequency }
-    fn set_frequency(&mut self, frequency: f32) { self.dirty = true; self.frequency = frequency; }
+    pub fn get_frequency(&self) -> f32 { self.frequency }
+    pub fn set_frequency(&mut self, frequency: f32) { self.dirty = true; self.frequency = frequency; }
 
-    fn get_q(&self) -> f32 { self.q }
-    fn set_q(&mut self, q: f32) { self.dirty = true; self.q = q; }
+    pub fn get_q(&self) -> f32 { self.q }
+    pub fn set_q(&mut self, q: f32) { self.dirty = true; self.q = q; }
 
-    fn get_db_gain(&self) -> f32 { self.db_gain }
-    fn set_db_gain(&mut self, db_gain: f32) { self.dirty = true; self.db_gain = db_gain; }
+    pub fn get_db_gain(&self) -> f32 { self.db_gain }
+    pub fn set_db_gain(&mut self, db_gain: f32) { self.dirty = true; self.db_gain = db_gain; }
 }

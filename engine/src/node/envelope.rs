@@ -132,14 +132,14 @@ impl Envelope {
 }
 
 impl Node for Envelope {
-    fn map_inputs(&mut self, buffers: &HashMap<String, &[f32; BUFFER_SIZE]>) {
+    fn map_inputs(&mut self, buffers: &HashMap<String, [f32; BUFFER_SIZE]>) {
         let buffer_in = match buffers.get(&String::from("out")) {
-            Some(gate) => gate,
+            Some(gate) => &gate,
             None => &[0_f32; BUFFER_SIZE]
         };
         
         let buffer_gate = match buffers.get(&String::from("gate")) {
-            Some(gate) => gate,
+            Some(gate) => &gate,
             None => &[0_f32; BUFFER_SIZE]
         };
 
@@ -161,14 +161,10 @@ impl Node for Envelope {
         }
     }    
 
-    fn map_outputs(&self) -> HashMap<String, &[f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, &[f32; BUFFER_SIZE]> = HashMap::new();
-
-        // TODO: this probably is not efficient
-        let mut buffer_out = [0_f32; BUFFER_SIZE];
-        buffer_out.clone_from(&self.buffer_out);
+    fn map_outputs(&self) -> HashMap<String, [f32; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
         
-        outputs.insert(String::from("out"), &buffer_out);
+        outputs.insert(String::from("out"), self.buffer_out);
         
         //outputs
         outputs

@@ -51,18 +51,18 @@ impl Node for SinOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, &[f32; BUFFER_SIZE]>) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&self) -> HashMap<String, &[f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, &[f32; BUFFER_SIZE]> = HashMap::new();
+    fn map_outputs(&self) -> HashMap<String, [f32; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
 
         // TODO: this probably is not efficient
         let mut buffer_out = [0_f32; BUFFER_SIZE];
         buffer_out.clone_from(&self.buffer_out);
         
-        outputs.insert(String::from("out"), &buffer_out);
+        outputs.insert(String::from("out"), buffer_out);
         
         //outputs
         outputs
@@ -105,18 +105,14 @@ impl Node for SawOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, &[f32; BUFFER_SIZE]>) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&self) -> HashMap<String, &[f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, &[f32; BUFFER_SIZE]> = HashMap::new();
-
-        // TODO: this probably is not efficient
-        let mut buffer_out = [0_f32; BUFFER_SIZE];
-        buffer_out.clone_from(&self.buffer_out);
+    fn map_outputs(&self) -> HashMap<String, [f32; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
         
-        outputs.insert(String::from("out"), &buffer_out);
+        outputs.insert(String::from("out"), self.buffer_out);
         
         //outputs
         outputs
@@ -164,18 +160,14 @@ impl Node for SquareOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, &[f32; BUFFER_SIZE]>) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&self) -> HashMap<String, &[f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, &[f32; BUFFER_SIZE]> = HashMap::new();
-
-        // TODO: this probably is not efficient
-        let mut buffer_out = [0_f32; BUFFER_SIZE];
-        buffer_out.clone_from(&self.buffer_out);
+    fn map_outputs(&self) -> HashMap<String, [f32; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
         
-        outputs.insert(String::from("out"), &buffer_out);
+        outputs.insert(String::from("out"), self.buffer_out);
         
         //outputs
         outputs
@@ -225,18 +217,14 @@ impl Node for TriangleOscillatorNode {
         self.buffer_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, &[f32; BUFFER_SIZE]>) {
+    fn map_inputs(&mut self, _buffers: &HashMap<String, [f32; BUFFER_SIZE]>) {
         // Nothing to do, perhaps detune in the future?
     }
 
-    fn map_outputs(&self) -> HashMap<String, &[f32; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, &[f32; BUFFER_SIZE]> = HashMap::new();
-
-        // TODO: this probably is not efficient
-        let mut buffer_out = [0_f32; BUFFER_SIZE];
-        buffer_out.clone_from(&self.buffer_out);
+    fn map_outputs(&self) -> HashMap<String, [f32; BUFFER_SIZE]> {
+        let mut outputs:HashMap::<String, [f32; BUFFER_SIZE]> = HashMap::new();
         
-        outputs.insert(String::from("out"), &buffer_out);
+        outputs.insert(String::from("out"), self.buffer_out);
         
         //outputs
         outputs
