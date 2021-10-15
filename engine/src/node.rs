@@ -21,7 +21,6 @@ impl dyn Node {
         let incoming_buffers = from.map_outputs();
 
         self.map_inputs(&incoming_buffers);
-        self.process();
     }
 
     pub fn receive_multiple<'a>(&mut self, from_list: Vec<(&'a dyn Node, String, String)>) {
@@ -43,7 +42,6 @@ impl dyn Node {
         }        
 
         self.map_inputs(&mixed_buffer);
-        self.process();
     }
 
     pub fn receive_and_process(&mut self, from: &dyn Node) {
