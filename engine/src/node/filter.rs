@@ -39,7 +39,7 @@ impl Node for Filter {
 
     fn process(&mut self) {
         if self.dirty {
-            //self.recompute();
+            self.recompute();
         }
 
         for i in 0..BUFFER_SIZE {

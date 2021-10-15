@@ -34,7 +34,7 @@ fn create_test_oscillator() -> SinOscillatorNode {
 }
 
 fn create_test_filter() -> Filter {
-    Filter::new(FilterType::Lowpass, 100000.0, 0.707)
+    Filter::new(FilterType::Lowpass, 20_000.0, 0.707)
 }
 
 fn create_test_gain() -> Gain {
@@ -58,7 +58,7 @@ fn one_sample(envelope: &mut Envelope, osc: &mut SinOscillatorNode, filter: &mut
         (osc, String::from("out"), String::from("out")),
         (gate, String::from("out"), String::from("gate"))
     ]);
-    gain.receive_and_process(osc);
+    gain.receive_and_process(envelope);
     filter.receive_and_process(gain);
     
 
@@ -70,10 +70,6 @@ fn write_to_file(output_file: &mut std::fs::File, data: &[f64]) {
 
     // TODO: would memcpy work here faster?
     for i in 0..BUFFER_SIZE {
-        if data[i] > 1.0 || data[i] < -1.0 {
-            print!("Clipping!");
-        }
-
         let num = (data[i] as f32).to_le_bytes();
 
         data_out[i * 4 + 0] = num[0];
