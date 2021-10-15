@@ -39,7 +39,7 @@ impl Node for Filter {
 
     fn process(&mut self) {
         if self.dirty {
-            self.recompute();
+            //self.recompute();
         }
 
         for i in 0..BUFFER_SIZE {
@@ -80,7 +80,7 @@ impl Filter {
             q: q,
             a1: 0.0,
             a2: 0.0,
-            b0: 0.0,
+            b0: 1.0,
             b1: 0.0,
             b2: 0.0,
             prev_input_1: 0.0,
@@ -98,9 +98,6 @@ impl Filter {
     }
 
     fn recompute(&mut self) {
-        let k = (PI * self.frequency / SAMPLE_RATE as f64).tan();
-        let norm = 1.0 / (1.0 + k / self.q + k * k);
-
         let a1;
         let a2;
         let b0;
@@ -109,12 +106,28 @@ impl Filter {
 
         match &self.filter_type {
             FilterType::Lowpass => {
+                let k = (PI * self.frequency / SAMPLE_RATE as f64).tan();
+                let norm = 1.0 / (1.0 + k / self.q + k * k);
+
                 b0 = k * k * norm;
                 b1 = 2.0 * b0;
                 b2 = b0;
                 a1 = 2.0 * (k * k - 1.0) * norm;
                 a2 = (1.0 - k / self.q + k * k) * norm;
             }
+            // FilterType::Lowpass => {
+            //     let n = 1.0 / (PI * self.frequency / SAMPLE_RATE as f64);
+            //     let n_squared = n * n;
+            //     let inv_q = 1.0 / self.q;
+            //     let c1 = 1.0 / (1.0 + inv_q * n + n_squared);
+
+            //     b0 = c1;
+            //     b1 = c1 * 2.0;
+            //     b2 = c1;
+
+            //     a1 = c1 * 2.0 * (1.0 - n_squared);
+            //     a2 = c1 * (1.0 - inv_q * n + n_squared);
+            // }
         };
 
         self.a1 = a1;

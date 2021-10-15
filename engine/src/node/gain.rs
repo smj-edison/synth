@@ -15,7 +15,7 @@ impl Gain {
         Gain {
             buffer_in: [0_f64; BUFFER_SIZE],
             buffer_out: [0_f64; BUFFER_SIZE],
-            gain: 0.7
+            gain: 0.1
         }
     }
 

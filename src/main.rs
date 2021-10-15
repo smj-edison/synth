@@ -1,4 +1,4 @@
-use std::{thread, time::Duration};
+use std::{thread, time::Duration, io::Write};
 
 use engine::constants::{BUFFER_SIZE, SAMPLE_RATE};
 
@@ -65,7 +65,29 @@ fn one_sample(envelope: &mut Envelope, osc: &mut SinOscillatorNode, filter: &mut
     *filter.map_outputs().get(&String::from("out")).unwrap()
 }
 
+fn write_to_file(output_file: &mut std::fs::File, data: &[f64]) {
+    let mut data_out = [0_u8; BUFFER_SIZE * 4];
+
+    // TODO: would memcpy work here faster?
+    for i in 0..BUFFER_SIZE {
+        if data[i] > 1.0 || data[i] < -1.0 {
+            print!("Clipping!");
+        }
+
+        let num = (data[i] as f32).to_le_bytes();
+
+        data_out[i * 4 + 0] = num[0];
+        data_out[i * 4 + 1] = num[1];
+        data_out[i * 4 + 2] = num[2];
+        data_out[i * 4 + 3] = num[3];
+    }
+
+    output_file.write(&data_out);
+}
+
 fn main() {
+    let mut output_file = std::fs::File::create("audio.raw").unwrap();
+
     let backend = connect_backend();
 
     let mut osc = create_test_oscillator();
@@ -77,19 +99,15 @@ fn main() {
 
     let attack_time = 50;
 
-    for i in 0..3 {
-        let test = one_sample(&mut envelope, &mut osc, &mut filter, &mut gain, if current_sample > attack_time { 0.0 } else { 1.0 });
-        backend.write(&test);
-
-        current_sample += 1;
-    }
-
     loop {
         let test = one_sample(&mut envelope, &mut osc, &mut filter, &mut gain, if current_sample > attack_time { 0.0 } else { 1.0 });
         backend.write(&test);
+        write_to_file(&mut output_file, &test);
         
-        thread::sleep(Duration::from_millis(((BUFFER_SIZE as u32) / SAMPLE_RATE as u32).into()));
-
+        if current_sample > 3 {
+            thread::sleep(Duration::from_millis(((BUFFER_SIZE as u32) / SAMPLE_RATE as u32).into()));
+        }
+        
         current_sample += 1;
     }
 }
