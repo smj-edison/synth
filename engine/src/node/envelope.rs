@@ -23,9 +23,9 @@ pub struct Envelope {
     // based on the current amplitude, not jump to 0
     amplitude_anchor: f64, // between 0 and 1
     current_amplitude: f64, // between 0 and 1
-    buffer_gate: [f64; BUFFER_SIZE],
-    buffer_in: [f64; BUFFER_SIZE],
-    buffer_out: [f64; BUFFER_SIZE]
+    input_gate: [f64; BUFFER_SIZE],
+    input_in: [f64; BUFFER_SIZE],
+    output_out: [f64; BUFFER_SIZE]
 }
 
 // TODO: ADSR linear only
@@ -40,9 +40,9 @@ impl Envelope {
             amplitude_position: 0.0,
             amplitude_anchor: 0.0,
             current_amplitude: 0.0,
-            buffer_gate: [0_f64; BUFFER_SIZE],
-            buffer_in: [0_f64; BUFFER_SIZE],
-            buffer_out: [0_f64; BUFFER_SIZE]
+            input_gate: [0_f64; BUFFER_SIZE],
+            input_in: [0_f64; BUFFER_SIZE],
+            output_out: [0_f64; BUFFER_SIZE]
         }
     }
 
@@ -143,13 +143,13 @@ impl Node for Envelope {
             None => &[0_f64; BUFFER_SIZE]
         };
 
-        self.buffer_in.clone_from(buffer_in);
-        self.buffer_gate.clone_from(buffer_gate);
+        self.input_in.clone_from(buffer_in);
+        self.input_gate.clone_from(buffer_gate);
     }
 
     fn process(&mut self) {
-        for i in 0..self.buffer_gate.len() {
-            let engaged = self.buffer_gate[i] > 0.0;
+        for i in 0..self.input_gate.len() {
+            let engaged = self.input_gate[i] > 0.0;
 
             if engaged {
                 self.process_gate_engaged();
@@ -157,14 +157,14 @@ impl Node for Envelope {
                 self.process_gate_released();
             }
 
-            self.buffer_out[i] = self.buffer_in[i] * self.current_amplitude;
+            self.output_out[i] = self.input_in[i] * self.current_amplitude;
         }
     }    
 
     fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
         let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
         
-        outputs.insert(String::from("out"), self.buffer_out);
+        outputs.insert(String::from("out"), self.output_out);
         
         //outputs
         outputs

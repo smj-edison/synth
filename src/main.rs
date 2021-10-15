@@ -45,7 +45,7 @@ fn one_sample(envelope: &mut Envelope, osc: &mut SinOscillatorNode, filter: &mut
     let gate_sample = [gate; BUFFER_SIZE];
     let mut gate = Dummy::new();
 
-    gate.set_buffer_out(gate_sample);
+    gate.set_output_out(gate_sample);
     
     let envelope = envelope as &mut dyn Node;
     let filter = filter as &mut dyn Node;

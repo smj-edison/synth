@@ -19,7 +19,7 @@ pub trait Oscillator {
 pub struct SinOscillatorNode {
     phase: f64,
     frequency: f64,
-    buffer_out: [f64; BUFFER_SIZE]
+    output_out: [f64; BUFFER_SIZE]
 }
 
 impl SinOscillatorNode {
@@ -27,7 +27,7 @@ impl SinOscillatorNode {
         SinOscillatorNode { 
             phase: 0_f64,
             frequency: 440_f64,
-            buffer_out: [0_f64; BUFFER_SIZE]
+            output_out: [0_f64; BUFFER_SIZE]
         }
     }
 }
@@ -48,7 +48,7 @@ impl Node for SinOscillatorNode {
             self.phase = (self.phase + phase_advance) % TWO_PI;
         }
 
-        self.buffer_out = buffer_out;
+        self.output_out = buffer_out;
     }
 
     fn map_inputs(&mut self, _buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
@@ -60,7 +60,7 @@ impl Node for SinOscillatorNode {
 
         // TODO: this probably is not efficient
         let mut buffer_out = [0_f64; BUFFER_SIZE];
-        buffer_out.clone_from(&self.buffer_out);
+        buffer_out.clone_from(&self.output_out);
         
         outputs.insert(String::from("out"), buffer_out);
         
@@ -73,7 +73,7 @@ impl Node for SinOscillatorNode {
 pub struct SawOscillatorNode {
     phase: f64,
     frequency: f64,
-    buffer_out: [f64; BUFFER_SIZE]
+    output_out: [f64; BUFFER_SIZE]
 }
 
 impl SawOscillatorNode {
@@ -81,7 +81,7 @@ impl SawOscillatorNode {
         SawOscillatorNode { 
             phase: 0_f64,
             frequency: 440_f64,
-            buffer_out: [0_f64; BUFFER_SIZE]
+            output_out: [0_f64; BUFFER_SIZE]
         }
     }
 }
@@ -102,7 +102,7 @@ impl Node for SawOscillatorNode {
             self.phase = (self.phase + phase_advance) % 1.0;
         }
 
-        self.buffer_out = buffer_out;
+        self.output_out = buffer_out;
     }
 
     fn map_inputs(&mut self, _buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
@@ -112,7 +112,7 @@ impl Node for SawOscillatorNode {
     fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
         let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
         
-        outputs.insert(String::from("out"), self.buffer_out);
+        outputs.insert(String::from("out"), self.output_out);
         
         //outputs
         outputs
@@ -123,7 +123,7 @@ impl Node for SawOscillatorNode {
 pub struct SquareOscillatorNode {
     phase: f64,
     frequency: f64,
-    buffer_out: [f64; BUFFER_SIZE],
+    output_out: [f64; BUFFER_SIZE],
     duty_cycle: f64
 }
 
@@ -132,7 +132,7 @@ impl SquareOscillatorNode {
         SquareOscillatorNode { 
             phase: 0_f64,
             frequency: 440_f64,
-            buffer_out: [0_f64; BUFFER_SIZE],
+            output_out: [0_f64; BUFFER_SIZE],
             duty_cycle: 0.5
         }
     }
@@ -157,7 +157,7 @@ impl Node for SquareOscillatorNode {
             self.phase = (self.phase + phase_advance) % 1.0;
         }
 
-        self.buffer_out = buffer_out;
+        self.output_out = buffer_out;
     }
 
     fn map_inputs(&mut self, _buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
@@ -167,7 +167,7 @@ impl Node for SquareOscillatorNode {
     fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
         let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
         
-        outputs.insert(String::from("out"), self.buffer_out);
+        outputs.insert(String::from("out"), self.output_out);
         
         //outputs
         outputs
@@ -178,7 +178,7 @@ impl Node for SquareOscillatorNode {
 pub struct TriangleOscillatorNode {
     phase: f64,
     frequency: f64,
-    buffer_out: [f64; BUFFER_SIZE]
+    output_out: [f64; BUFFER_SIZE]
 }
 
 impl TriangleOscillatorNode {
@@ -186,7 +186,7 @@ impl TriangleOscillatorNode {
         TriangleOscillatorNode { 
             phase: 0_f64,
             frequency: 440_f64,
-            buffer_out: [0_f64; BUFFER_SIZE]
+            output_out: [0_f64; BUFFER_SIZE]
         }
     }
 }
@@ -214,7 +214,7 @@ impl Node for TriangleOscillatorNode {
             self.phase = (self.phase + phase_advance) % 1.0;
         }
 
-        self.buffer_out = buffer_out;
+        self.output_out = buffer_out;
     }
 
     fn map_inputs(&mut self, _buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
@@ -224,7 +224,7 @@ impl Node for TriangleOscillatorNode {
     fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
         let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
         
-        outputs.insert(String::from("out"), self.buffer_out);
+        outputs.insert(String::from("out"), self.output_out);
         
         //outputs
         outputs
