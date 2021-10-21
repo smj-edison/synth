@@ -1,8 +1,6 @@
-use crate::constants::{BUFFER_SIZE, TWO_PI, SAMPLE_RATE};
+use crate::constants::{PI, TWO_PI, SAMPLE_RATE};
 
 use crate::node::{Node, InputType, OutputType};
-
-use std::collections::HashMap;
 
 pub trait Oscillator {
     fn get_frequency(&self) -> f64;
@@ -54,7 +52,7 @@ impl Node for SinOscillatorNode {
 
     fn get_output_audio(&self, output_type: OutputType) -> f64 {
         match output_type {
-            Out => self.output_out,
+            OutputType::Out => self.output_out,
             _ => panic!("Cannot output {:?}", output_type)
         }
     }
@@ -84,11 +82,30 @@ impl Oscillator for SawOscillatorNode {
 
 impl Node for SawOscillatorNode {
     fn process(&mut self) {
-        let phase_advance = self.frequency / (SAMPLE_RATE as f64);
+        let phase_advance = self.frequency / (SAMPLE_RATE as f64) * TWO_PI;
 
-        self.output_out = self.phase % 1.0;
+        self.output_out = self.phase.sin();
 
-        self.phase = (self.phase + phase_advance) % 1.0;
+        self.phase = (self.phase + phase_advance) % TWO_PI;
+
+        let mut num_harmonics = 0;
+        
+        if self.frequency != 0.0 {
+            while self.frequency * ((num_harmonics * 2 - 1) as f64) < SAMPLE_RATE as f64 * 0.5 {
+                num_harmonics += 1;
+            }
+
+            num_harmonics -= 1;
+        }
+
+        let mut sin_sum = 0.0;
+
+        for harmonic_index in 1..num_harmonics {
+            sin_sum += (self.phase * (harmonic_index * 2 - 1) as f64).sin() / ((harmonic_index * 2 - 1) as f64);
+        }
+
+        //adjust the volume
+        self.output_out = sin_sum * 4.0 / PI;
     }
 
     fn receive_audio(&mut self, input_type: InputType, _input: f64) {
@@ -99,7 +116,7 @@ impl Node for SawOscillatorNode {
 
     fn get_output_audio(&self, output_type: OutputType) -> f64 {
         match output_type {
-            Out => self.output_out,
+            OutputType::Out => self.output_out,
             _ => panic!("Cannot output {:?}", output_type)
         }
     }
@@ -149,7 +166,7 @@ impl Node for SquareOscillatorNode {
 
     fn get_output_audio(&self, output_type: OutputType) -> f64 {
         match output_type {
-            Out => self.output_out,
+            OutputType::Out => self.output_out,
             _ => panic!("Cannot output {:?}", output_type)
         }
     }
@@ -200,7 +217,7 @@ impl Node for TriangleOscillatorNode {
 
     fn get_output_audio(&self, output_type: OutputType) -> f64 {
         match output_type {
-            Out => self.output_out,
+            OutputType::Out => self.output_out,
             _ => panic!("Cannot output {:?}", output_type)
         }
     }
