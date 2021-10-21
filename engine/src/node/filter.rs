@@ -20,19 +20,22 @@ pub struct Filter {
     prev_input_2: f64,
     prev_output_1: f64,
     prev_output_2: f64,
+    filter_offset_in: f64,
     input_in: f64,
     output_out: f64
 }
 
 impl Node for Filter {
     fn receive_audio(&mut self, input_type: InputType, input: f64) {
-        self.input_in = input;
+        match input_type {
+            InputType::FilterOffset => self.filter_offset_in = input,
+            InputType::In => self.input_in = input,
+            _ => panic!("Cannot receive {:?}", input_type)
+        }
     }
 
     fn process(&mut self) {
-        if self.dirty {
-            self.recompute();
-        }
+        self.recompute();
 
         let output = 
             (self.b0 * self.input_in) +
@@ -73,6 +76,7 @@ impl Filter {
             prev_input_2: 0.0,
             prev_output_1: 0.0,
             prev_output_2: 0.0,
+            filter_offset_in: 0.0,
             input_in: 0_f64,
             output_out: 0_f64,
             dirty: true
@@ -91,29 +95,35 @@ impl Filter {
         let b2;
 
         match &self.filter_type {
-            FilterType::Lowpass => {
-                let k = (PI * self.frequency / SAMPLE_RATE as f64).tan();
-                let norm = 1.0 / (1.0 + k / self.q + k * k);
-
-                b0 = k * k * norm;
-                b1 = 2.0 * b0;
-                b2 = b0;
-                a1 = 2.0 * (k * k - 1.0) * norm;
-                a2 = (1.0 - k / self.q + k * k) * norm;
-            }
             // FilterType::Lowpass => {
-            //     let n = 1.0 / (PI * self.frequency / SAMPLE_RATE as f64);
-            //     let n_squared = n * n;
-            //     let inv_q = 1.0 / self.q;
-            //     let c1 = 1.0 / (1.0 + inv_q * n + n_squared);
+            //     let freq = (self.frequency + (self.filter_offset_in * 10_000.0)).clamp(0.0, SAMPLE_RATE as f64 * 0.5);
+            //     //println!("{}", freq);
 
-            //     b0 = c1;
-            //     b1 = c1 * 2.0;
-            //     b2 = c1;
+            //     let k = (PI * freq / SAMPLE_RATE as f64).tan();
+            //     let norm = 1.0 / (1.0 + k / self.q + k * k);
 
-            //     a1 = c1 * 2.0 * (1.0 - n_squared);
-            //     a2 = c1 * (1.0 - inv_q * n + n_squared);
+            //     b0 = k * k * norm;
+            //     b1 = 2.0 * b0;
+            //     b2 = b0;
+            //     a1 = 2.0 * (k * k - 1.0) * norm;
+            //     a2 = (1.0 - k / self.q + k * k) * norm;
             // }
+            FilterType::Lowpass => {
+                // clamp to prevent the filter becoming unstable
+                let freq = (self.frequency + (self.filter_offset_in * 10_000.0)).clamp(1.0, SAMPLE_RATE as f64 * 0.5);
+
+                let n = 1.0 / (PI * freq / SAMPLE_RATE as f64);
+                let n_squared = n * n;
+                let inv_q = 1.0 / self.q;
+                let c1 = 1.0 / (1.0 + inv_q * n + n_squared);
+
+                b0 = c1;
+                b1 = c1 * 2.0;
+                b2 = c1;
+
+                a1 = c1 * 2.0 * (1.0 - n_squared);
+                a2 = c1 * (1.0 - inv_q * n + n_squared);
+            }
         };
 
         self.a1 = a1;

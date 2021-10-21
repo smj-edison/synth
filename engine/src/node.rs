@@ -14,7 +14,7 @@ pub trait Node {
 
 #[derive(Debug)]
 pub enum InputType {
-    In, Gate, Detune
+    In, Gate, Detune, FilterOffset
 }
 
 #[derive(Debug)]
