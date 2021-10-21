@@ -11,7 +11,7 @@ impl Gain {
         Gain {
             input_in: 0_f64,
             output_out: 0_f64,
-            gain: 0.1
+            gain: 0.4
         }
     }
 }
@@ -19,7 +19,7 @@ impl Gain {
 impl Node for Gain {
     fn receive_audio(&mut self, input_type: InputType, input: f64) {
         match input_type {
-            In => self.input_in = input,
+            InputType::In => self.input_in = input,
             _ => panic!("Cannot receive {:?}", input_type)
         }
     }
@@ -32,7 +32,7 @@ impl Node for Gain {
 
     fn get_output_audio(&self, output_type: OutputType) -> f64 {
         match output_type {
-            Out => self.output_out,
+            OutputType::Out => self.output_out,
             _ => panic!("Cannot output {:?}", output_type)
         }
     }

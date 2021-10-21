@@ -52,7 +52,7 @@ impl Node for Filter {
 
     fn get_output_audio(&self, output_type: OutputType) -> f64 {
         match output_type {
-            Out => self.output_out,
+            OutputType::Out => self.output_out,
             _ => panic!("Cannot output {:?}", output_type)
         }
     }
