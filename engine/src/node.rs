@@ -12,10 +12,12 @@ pub trait Node {
     fn get_output_audio(&self, output_type: OutputType) -> f64;
 }
 
+#[derive(Debug)]
 pub enum InputType {
     In, Gate, Detune
 }
 
+#[derive(Debug)]
 pub enum OutputType {
     Out
 }
