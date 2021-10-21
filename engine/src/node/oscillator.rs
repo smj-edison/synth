@@ -1,3 +1,5 @@
+use std::num;
+
 use crate::constants::{PI, TWO_PI, SAMPLE_RATE};
 
 use crate::node::{Node, InputType, OutputType};
@@ -84,16 +86,19 @@ impl Oscillator for SawOscillatorNode {
 impl Node for SawOscillatorNode {
     fn process(&mut self) {
         let phase_advance = self.frequency / (SAMPLE_RATE as f64) * TWO_PI;
+        self.phase = (self.phase + phase_advance) % TWO_PI;
 
         let mut num_harmonics = 0;
         
         if self.frequency != 0.0 {
             let mut temp_freq = self.frequency;
 
-            while temp_freq < SAMPLE_RATE as f64 / 2.0 {
+            while temp_freq < SAMPLE_RATE as f64 * 0.5 {
                 num_harmonics += 1;
-                temp_freq *= 2.0;
+                temp_freq += self.frequency;
             }
+
+            //print!("{} ", num_harmonics);
         }
 
         let mut sin_sum = 0.0;
@@ -104,8 +109,6 @@ impl Node for SawOscillatorNode {
 
         //adjust the volume
         self.output_out = sin_sum * 2.0 / PI;
-
-        self.phase = (self.phase + phase_advance) % TWO_PI;
     }
 
     fn receive_audio(&mut self, input_type: InputType, _input: f64) {
@@ -158,8 +161,6 @@ impl Node for SquareOscillatorNode {
             while self.frequency * ((num_harmonics * 2 - 1) as f64) < SAMPLE_RATE as f64 * 0.5 {
                 num_harmonics += 1;
             }
-
-            num_harmonics -= 1;
         }
 
         let mut sin_sum = 0.0;
