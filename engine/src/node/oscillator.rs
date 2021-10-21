@@ -65,6 +65,7 @@ pub struct SawOscillatorNode {
     output_out: f64
 }
 
+// huge thanks to https://blog.demofox.org/2012/06/18/diy-synth-3-sampling-mixing-and-band-limited-wave-forms/
 impl SawOscillatorNode {
     pub fn new() -> SawOscillatorNode {
         SawOscillatorNode { 
@@ -81,6 +82,69 @@ impl Oscillator for SawOscillatorNode {
 }
 
 impl Node for SawOscillatorNode {
+    fn process(&mut self) {
+        let phase_advance = self.frequency / (SAMPLE_RATE as f64) * TWO_PI;
+
+        let mut num_harmonics = 0;
+        
+        if self.frequency != 0.0 {
+            let mut temp_freq = self.frequency;
+
+            while temp_freq < SAMPLE_RATE as f64 / 2.0 {
+                num_harmonics += 1;
+                temp_freq *= 2.0;
+            }
+        }
+
+        let mut sin_sum = 0.0;
+
+        for harmonic_index in 1..num_harmonics {
+            sin_sum += (self.phase * harmonic_index as f64).sin() / harmonic_index as f64;
+        }
+
+        //adjust the volume
+        self.output_out = sin_sum * 2.0 / PI;
+
+        self.phase = (self.phase + phase_advance) % TWO_PI;
+    }
+
+    fn receive_audio(&mut self, input_type: InputType, _input: f64) {
+        match input_type {
+            _ => panic!("Cannot receive {:?}", input_type)
+        }
+    }
+
+    fn get_output_audio(&self, output_type: OutputType) -> f64 {
+        match output_type {
+            OutputType::Out => self.output_out,
+            _ => panic!("Cannot output {:?}", output_type)
+        }
+    }
+}
+
+
+pub struct SquareOscillatorNode {
+    phase: f64,
+    frequency: f64,
+    output_out: f64
+}
+
+impl SquareOscillatorNode {
+    pub fn new() -> SquareOscillatorNode {
+        SquareOscillatorNode { 
+            phase: 0_f64,
+            frequency: 440_f64,
+            output_out: 0_f64
+        }
+    }
+}
+
+impl Oscillator for SquareOscillatorNode {
+    fn get_frequency(&self) -> f64 { self.frequency }
+    fn set_frequency(&mut self, frequency: f64) { self.frequency = frequency; }
+}
+
+impl Node for SquareOscillatorNode {
     fn process(&mut self) {
         let phase_advance = self.frequency / (SAMPLE_RATE as f64) * TWO_PI;
 
@@ -106,56 +170,6 @@ impl Node for SawOscillatorNode {
 
         //adjust the volume
         self.output_out = sin_sum * 4.0 / PI;
-    }
-
-    fn receive_audio(&mut self, input_type: InputType, _input: f64) {
-        match input_type {
-            _ => panic!("Cannot receive {:?}", input_type)
-        }
-    }
-
-    fn get_output_audio(&self, output_type: OutputType) -> f64 {
-        match output_type {
-            OutputType::Out => self.output_out,
-            _ => panic!("Cannot output {:?}", output_type)
-        }
-    }
-}
-
-
-pub struct SquareOscillatorNode {
-    phase: f64,
-    frequency: f64,
-    output_out: f64,
-    duty_cycle: f64
-}
-
-impl SquareOscillatorNode {
-    pub fn new() -> SquareOscillatorNode {
-        SquareOscillatorNode { 
-            phase: 0_f64,
-            frequency: 440_f64,
-            output_out: 0_f64,
-            duty_cycle: 0.5
-        }
-    }
-
-    pub fn set_duty_cycle(&mut self, duty_cycle: f64) { self.duty_cycle = duty_cycle; }
-    pub fn get_duty_cycle(&mut self) -> f64 { self.duty_cycle }
-}
-
-impl Oscillator for SquareOscillatorNode {
-    fn get_frequency(&self) -> f64 { self.frequency }
-    fn set_frequency(&mut self, frequency: f64) { self.frequency = frequency; }
-}
-
-impl Node for SquareOscillatorNode {
-    fn process(&mut self) {
-        let phase_advance = self.frequency / (SAMPLE_RATE as f64);
-
-        self.output_out = if self.phase >= self.duty_cycle { 1.0 } else { -1.0 };
-
-        self.phase = (self.phase + phase_advance) % 1.0;
     }
 
     fn receive_audio(&mut self, input_type: InputType, _input: f64) {
