@@ -1,8 +1,6 @@
 use crate::constants::{BUFFER_SIZE, SAMPLE_RATE};
 
-use crate::node::Node;
-
-use std::collections::HashMap;
+use crate::node::{Node, InputType, OutputType};
 
 pub enum EnvelopeState {
     Attacking,
@@ -23,9 +21,9 @@ pub struct Envelope {
     // based on the current amplitude, not jump to 0
     amplitude_anchor: f64, // between 0 and 1
     current_amplitude: f64, // between 0 and 1
-    input_gate: [f64; BUFFER_SIZE],
-    input_in: [f64; BUFFER_SIZE],
-    output_out: [f64; BUFFER_SIZE]
+    input_gate: f64,
+    input_in: f64,
+    output_out: f64
 }
 
 // TODO: ADSR linear only
@@ -40,9 +38,9 @@ impl Envelope {
             amplitude_position: 0.0,
             amplitude_anchor: 0.0,
             current_amplitude: 0.0,
-            input_gate: [0_f64; BUFFER_SIZE],
-            input_in: [0_f64; BUFFER_SIZE],
-            output_out: [0_f64; BUFFER_SIZE]
+            input_gate: 0_f64,
+            input_in: 0_f64,
+            output_out: 0_f64
         }
     }
 
@@ -132,42 +130,31 @@ impl Envelope {
 }
 
 impl Node for Envelope {
-    fn map_inputs(&mut self, buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
-        let buffer_in = match buffers.get(&String::from("out")) {
-            Some(gate) => &gate,
-            None => &[0_f64; BUFFER_SIZE]
-        };
-        
-        let buffer_gate = match buffers.get(&String::from("gate")) {
-            Some(gate) => &gate,
-            None => &[0_f64; BUFFER_SIZE]
-        };
-
-        self.input_in.clone_from(buffer_in);
-        self.input_gate.clone_from(buffer_gate);
+    fn receive_audio(&mut self, input_type: InputType, input: f64) {
+        match input_type {
+            In => self.input_in = input,
+            Gate => self.input_gate = input,
+            _ => panic!("Cannot receive {:?}", input_type)
+        }
     }
 
     fn process(&mut self) {
-        for i in 0..self.input_gate.len() {
-            let engaged = self.input_gate[i] > 0.0;
+        let engaged = self.input_gate > 0.0;
 
-            if engaged {
-                self.process_gate_engaged();
-            } else {
-                self.process_gate_released();
-            }
-
-            self.output_out[i] = self.input_in[i] * self.current_amplitude;
+        if engaged {
+            self.process_gate_engaged();
+        } else {
+            self.process_gate_released();
         }
+
+        self.output_out = self.input_in * self.current_amplitude;
     }    
 
-    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
-        
-        outputs.insert(String::from("out"), self.output_out);
-        
-        //outputs
-        outputs
+    fn get_output_audio(&self, output_type: OutputType) -> f64 {
+        match output_type {
+            Out => self.output_out,
+            _ => panic!("Cannot output {:?}", output_type)
+        }
     }
 }
 
