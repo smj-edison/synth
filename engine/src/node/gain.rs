@@ -1,59 +1,39 @@
-use std::collections::HashMap;
-
-use crate::constants::{BUFFER_SIZE};
-
-use crate::node::Node;
+use crate::node::{Node, InputType, OutputType};
 
 pub struct Gain {
-    input_in: [f64; BUFFER_SIZE],
-    output_out: [f64; BUFFER_SIZE],
+    input_in: f64,
+    output_out: f64,
     gain: f64
 }
 
 impl Gain {
     pub fn new() -> Gain {
         Gain {
-            input_in: [0_f64; BUFFER_SIZE],
-            output_out: [0_f64; BUFFER_SIZE],
+            input_in: 0_f64,
+            output_out: 0_f64,
             gain: 0.1
         }
-    }
-
-    pub fn set_buffer_out(&mut self, buffer_out: [f64; BUFFER_SIZE]) {
-        self.output_out = buffer_out;
-    }
-
-    pub fn get_buffer_in(&self) -> &[f64; BUFFER_SIZE] {
-        &self.input_in
     }
 }
 
 impl Node for Gain {
-    fn map_inputs(&mut self, buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
-        let buffer_in = match buffers.get(&String::from("out")) {
-            Some(gate) => &gate,
-            None => &[0_f64; BUFFER_SIZE]
-        };
-
-        self.input_in.clone_from(buffer_in);
-    }
-
-    fn process(&mut self) {
-        for i in 0..BUFFER_SIZE {
-            let input = self.input_in[i];
-
-            let output = input * self.gain;
-
-            self.output_out[i] = output;
+    fn receive_audio(&mut self, input_type: InputType, input: f64) {
+        match input_type {
+            In => self.input_in = input,
+            _ => panic!("Cannot receive {:?}", input_type)
         }
     }
 
-    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
-        
-        outputs.insert(String::from("out"), self.output_out);
-        
-        //outputs
-        outputs
+    fn process(&mut self) {
+        let input = self.input_in;
+
+        self.output_out = input * self.gain;
+    }
+
+    fn get_output_audio(&self, output_type: OutputType) -> f64 {
+        match output_type {
+            Out => self.output_out,
+            _ => panic!("Cannot output {:?}", output_type)
+        }
     }
 }

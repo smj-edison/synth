@@ -1,6 +1,6 @@
 use crate::constants::{BUFFER_SIZE, TWO_PI, SAMPLE_RATE};
 
-use crate::node::Node;
+use crate::node::{Node, InputType, OutputType};
 
 use std::collections::HashMap;
 
@@ -19,7 +19,7 @@ pub trait Oscillator {
 pub struct SinOscillatorNode {
     phase: f64,
     frequency: f64,
-    output_out: [f64; BUFFER_SIZE]
+    output_out: f64
 }
 
 impl SinOscillatorNode {
@@ -27,7 +27,7 @@ impl SinOscillatorNode {
         SinOscillatorNode { 
             phase: 0_f64,
             frequency: 440_f64,
-            output_out: [0_f64; BUFFER_SIZE]
+            output_out: 0_f64
         }
     }
 }
@@ -41,31 +41,22 @@ impl Node for SinOscillatorNode {
     fn process(&mut self) {
         let phase_advance = self.frequency / (SAMPLE_RATE as f64) * TWO_PI;
 
-        let mut buffer_out = [0_f64; BUFFER_SIZE];
+        self.output_out = self.phase.sin();
 
-        for i in 0..BUFFER_SIZE {
-            buffer_out[i] = self.phase.sin();
-            self.phase = (self.phase + phase_advance) % TWO_PI;
+        self.phase = (self.phase + phase_advance) % TWO_PI;        
+    }
+
+    fn receive_audio(&mut self, input_type: InputType, _input: f64) {
+        match input_type {
+            _ => panic!("Cannot receive {:?}", input_type)
         }
-
-        self.output_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
-        // Nothing to do, perhaps detune in the future?
-    }
-
-    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
-
-        // TODO: this probably is not efficient
-        let mut buffer_out = [0_f64; BUFFER_SIZE];
-        buffer_out.clone_from(&self.output_out);
-        
-        outputs.insert(String::from("out"), buffer_out);
-        
-        //outputs
-        outputs
+    fn get_output_audio(&self, output_type: OutputType) -> f64 {
+        match output_type {
+            Out => self.output_out,
+            _ => panic!("Cannot output {:?}", output_type)
+        }
     }
 }
 
@@ -73,7 +64,7 @@ impl Node for SinOscillatorNode {
 pub struct SawOscillatorNode {
     phase: f64,
     frequency: f64,
-    output_out: [f64; BUFFER_SIZE]
+    output_out: f64
 }
 
 impl SawOscillatorNode {
@@ -81,7 +72,7 @@ impl SawOscillatorNode {
         SawOscillatorNode { 
             phase: 0_f64,
             frequency: 440_f64,
-            output_out: [0_f64; BUFFER_SIZE]
+            output_out: 0_f64
         }
     }
 }
@@ -95,27 +86,22 @@ impl Node for SawOscillatorNode {
     fn process(&mut self) {
         let phase_advance = self.frequency / (SAMPLE_RATE as f64);
 
-        let mut buffer_out = [0_f64; BUFFER_SIZE];
+        self.output_out = self.phase % 1.0;
 
-        for i in 0..BUFFER_SIZE {
-            buffer_out[i] = self.phase % 1.0;
-            self.phase = (self.phase + phase_advance) % 1.0;
+        self.phase = (self.phase + phase_advance) % 1.0;
+    }
+
+    fn receive_audio(&mut self, input_type: InputType, _input: f64) {
+        match input_type {
+            _ => panic!("Cannot receive {:?}", input_type)
         }
-
-        self.output_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
-        // Nothing to do, perhaps detune in the future?
-    }
-
-    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
-        
-        outputs.insert(String::from("out"), self.output_out);
-        
-        //outputs
-        outputs
+    fn get_output_audio(&self, output_type: OutputType) -> f64 {
+        match output_type {
+            Out => self.output_out,
+            _ => panic!("Cannot output {:?}", output_type)
+        }
     }
 }
 
@@ -123,7 +109,7 @@ impl Node for SawOscillatorNode {
 pub struct SquareOscillatorNode {
     phase: f64,
     frequency: f64,
-    output_out: [f64; BUFFER_SIZE],
+    output_out: f64,
     duty_cycle: f64
 }
 
@@ -132,7 +118,7 @@ impl SquareOscillatorNode {
         SquareOscillatorNode { 
             phase: 0_f64,
             frequency: 440_f64,
-            output_out: [0_f64; BUFFER_SIZE],
+            output_out: 0_f64,
             duty_cycle: 0.5
         }
     }
@@ -150,27 +136,22 @@ impl Node for SquareOscillatorNode {
     fn process(&mut self) {
         let phase_advance = self.frequency / (SAMPLE_RATE as f64);
 
-        let mut buffer_out = [0_f64; BUFFER_SIZE];
+        self.output_out = if self.phase >= self.duty_cycle { 1.0 } else { -1.0 };
 
-        for i in 0..BUFFER_SIZE {
-            buffer_out[i] = if self.phase >= self.duty_cycle { 1.0 } else { -1.0 };
-            self.phase = (self.phase + phase_advance) % 1.0;
+        self.phase = (self.phase + phase_advance) % 1.0;
+    }
+
+    fn receive_audio(&mut self, input_type: InputType, _input: f64) {
+        match input_type {
+            _ => panic!("Cannot receive {:?}", input_type)
         }
-
-        self.output_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
-        // Nothing to do, perhaps detune in the future?
-    }
-
-    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
-        
-        outputs.insert(String::from("out"), self.output_out);
-        
-        //outputs
-        outputs
+    fn get_output_audio(&self, output_type: OutputType) -> f64 {
+        match output_type {
+            Out => self.output_out,
+            _ => panic!("Cannot output {:?}", output_type)
+        }
     }
 }
 
@@ -178,7 +159,7 @@ impl Node for SquareOscillatorNode {
 pub struct TriangleOscillatorNode {
     phase: f64,
     frequency: f64,
-    output_out: [f64; BUFFER_SIZE]
+    output_out: f64
 }
 
 impl TriangleOscillatorNode {
@@ -186,7 +167,7 @@ impl TriangleOscillatorNode {
         TriangleOscillatorNode { 
             phase: 0_f64,
             frequency: 440_f64,
-            output_out: [0_f64; BUFFER_SIZE]
+            output_out: 0_f64
         }
     }
 }
@@ -199,34 +180,28 @@ impl Oscillator for TriangleOscillatorNode {
 impl Node for TriangleOscillatorNode {
     fn process(&mut self) {
         let phase_advance = self.frequency / (SAMPLE_RATE as f64);
+        
+        self.output_out = if self.phase < 0.5 {
+            // phase goes between 0 and 0.5, make it go between 0 - 2 then -1 - 1
+            self.phase * 4.0 - 1.0
+        } else {
+            // phase goes between 0.5 and 1, invert it and make it go between 0 and 0.5, see above for rest
+            (1.0 - self.phase) * 4.0 - 1.0
+        };
 
-        let mut buffer_out = [0_f64; BUFFER_SIZE];
+        self.phase = (self.phase + phase_advance) % 1.0;
+    }
 
-        for i in 0..BUFFER_SIZE {
-            buffer_out[i] = if self.phase < 0.5 {
-                // phase goes between 0 and 0.5, make it go between 0 - 2 then -1 - 1
-                self.phase * 4.0 - 1.0
-            } else {
-                // phase goes between 0.5 and 1, invert it and make it go between 0 and 0.5, see above for rest
-                (1.0 - self.phase) * 4.0 - 1.0
-            };
-
-            self.phase = (self.phase + phase_advance) % 1.0;
+    fn receive_audio(&mut self, input_type: InputType, _input: f64) {
+        match input_type {
+            _ => panic!("Cannot receive {:?}", input_type)
         }
-
-        self.output_out = buffer_out;
     }
 
-    fn map_inputs(&mut self, _buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
-        // Nothing to do, perhaps detune in the future?
-    }
-
-    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
-        
-        outputs.insert(String::from("out"), self.output_out);
-        
-        //outputs
-        outputs
+    fn get_output_audio(&self, output_type: OutputType) -> f64 {
+        match output_type {
+            Out => self.output_out,
+            _ => panic!("Cannot output {:?}", output_type)
+        }
     }
 }
