@@ -25,7 +25,7 @@ impl Dummy {
 impl Node for Dummy {
     fn receive_audio(&mut self, input_type: InputType, input: f64) {
         match input_type {
-            In => self.input_in = input,
+            InputType::In => self.input_in = input,
             _ => panic!("Cannot receive {:?}", input_type)
         }
     }
@@ -36,7 +36,7 @@ impl Node for Dummy {
 
     fn get_output_audio(&self, output_type: OutputType) -> f64 {
         match output_type {
-            Out => self.output_out,
+            OutputType::Out => self.output_out,
             _ => panic!("Cannot output {:?}", output_type)
         }
     }
