@@ -1,8 +1,5 @@
-use std::collections::HashMap;
-
-use crate::constants::{BUFFER_SIZE, PI, SAMPLE_RATE};
-
-use crate::node::Node;
+use crate::node::{Node, InputType, OutputType};
+use crate::constants::{SAMPLE_RATE, PI};
 
 #[derive(Clone, Copy)]
 pub enum FilterType {
@@ -23,18 +20,13 @@ pub struct Filter {
     prev_input_2: f64,
     prev_output_1: f64,
     prev_output_2: f64,
-    input_in: [f64; BUFFER_SIZE],
-    output_out: [f64; BUFFER_SIZE]
+    input_in: f64,
+    output_out: f64
 }
 
 impl Node for Filter {
-    fn map_inputs(&mut self, buffers: &HashMap<String, [f64; BUFFER_SIZE]>) {
-        let buffer_in = match buffers.get(&String::from("out")) {
-            Some(gate) => &gate,
-            None => &[0_f64; BUFFER_SIZE]
-        };
-
-        self.input_in.clone_from(buffer_in);
+    fn receive_audio(&mut self, input_type: InputType, input: f64) {
+        self.input_in = input;
     }
 
     fn process(&mut self) {
@@ -42,33 +34,27 @@ impl Node for Filter {
             self.recompute();
         }
 
-        for i in 0..BUFFER_SIZE {
-            let input = self.input_in[i];
+        let output = 
+            (self.b0 * self.input_in) +
+            (self.b1 * self.prev_input_1) +
+            (self.b2 * self.prev_input_2) -
+            (self.a1 * self.prev_output_1) -
+            (self.a2 * self.prev_output_2);
 
-            let output = 
-                (self.b0 * input) +
-                (self.b1 * self.prev_input_1) +
-                (self.b2 * self.prev_input_2) -
-                (self.a1 * self.prev_output_1) -
-                (self.a2 * self.prev_output_2);
+        self.prev_input_2 = self.prev_input_1;
+        self.prev_input_1 = self.input_in;
 
-            self.prev_input_2 = self.prev_input_1;
-            self.prev_input_1 = input;
+        self.prev_output_2 = self.prev_output_1;
+        self.prev_output_1 = output;
 
-            self.prev_output_2 = self.prev_output_1;
-            self.prev_output_1 = output;
-
-            self.output_out[i] = output;
-        }
+        self.output_out = output;
     }
 
-    fn map_outputs(&self) -> HashMap<String, [f64; BUFFER_SIZE]> {
-        let mut outputs:HashMap::<String, [f64; BUFFER_SIZE]> = HashMap::new();
-        
-        outputs.insert(String::from("out"), self.output_out);
-        
-        //outputs
-        outputs
+    fn get_output_audio(&self, output_type: OutputType) -> f64 {
+        match output_type {
+            Out => self.output_out,
+            _ => panic!("Cannot output {:?}", output_type)
+        }
     }
 }
 
@@ -87,8 +73,8 @@ impl Filter {
             prev_input_2: 0.0,
             prev_output_1: 0.0,
             prev_output_2: 0.0,
-            input_in: [0_f64; BUFFER_SIZE],
-            output_out: [0_f64; BUFFER_SIZE],
+            input_in: 0_f64,
+            output_out: 0_f64,
             dirty: true
         };
 
