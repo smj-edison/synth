@@ -8,25 +8,25 @@ pub enum FilterType {
 
 pub struct Filter {
     filter_type: FilterType,
-    frequency: f64,
-    q: f64,
+    frequency: f32,
+    q: f32,
     dirty: bool,
-    a1: f64,
-    a2: f64,
-    b0: f64,
-    b1: f64,
-    b2: f64,
-    prev_input_1: f64,
-    prev_input_2: f64,
-    prev_output_1: f64,
-    prev_output_2: f64,
-    filter_offset_in: f64,
-    input_in: f64,
-    output_out: f64
+    a1: f32,
+    a2: f32,
+    b0: f32,
+    b1: f32,
+    b2: f32,
+    prev_input_1: f32,
+    prev_input_2: f32,
+    prev_output_1: f32,
+    prev_output_2: f32,
+    filter_offset_in: f32,
+    input_in: f32,
+    output_out: f32
 }
 
 impl Node for Filter {
-    fn receive_audio(&mut self, input_type: InputType, input: f64) {
+    fn receive_audio(&mut self, input_type: InputType, input: f32) {
         match input_type {
             InputType::FilterOffset => self.filter_offset_in = input,
             InputType::In => self.input_in = input,
@@ -53,7 +53,7 @@ impl Node for Filter {
         self.output_out = output;
     }
 
-    fn get_output_audio(&self, output_type: OutputType) -> f64 {
+    fn get_output_audio(&self, output_type: OutputType) -> f32 {
         match output_type {
             OutputType::Out => self.output_out,
             _ => panic!("Cannot output {:?}", output_type)
@@ -62,7 +62,7 @@ impl Node for Filter {
 }
 
 impl Filter {
-    pub fn new(filter_type: FilterType, frequency: f64, q: f64) -> Filter {
+    pub fn new(filter_type: FilterType, frequency: f32, q: f32) -> Filter {
         let mut new_filter = Filter {
             filter_type: filter_type,
             frequency: frequency,
@@ -77,8 +77,8 @@ impl Filter {
             prev_output_1: 0.0,
             prev_output_2: 0.0,
             filter_offset_in: 0.0,
-            input_in: 0_f64,
-            output_out: 0_f64,
+            input_in: 0_f32,
+            output_out: 0_f32,
             dirty: true
         };
 
@@ -96,10 +96,10 @@ impl Filter {
 
         match &self.filter_type {
             // FilterType::Lowpass => {
-            //     let freq = (self.frequency + (self.filter_offset_in * 10_000.0)).clamp(0.0, SAMPLE_RATE as f64 * 0.5);
+            //     let freq = (self.frequency + (self.filter_offset_in * 10_000.0)).clamp(0.0, SAMPLE_RATE as f32 * 0.5);
             //     //println!("{}", freq);
 
-            //     let k = (PI * freq / SAMPLE_RATE as f64).tan();
+            //     let k = (PI * freq / SAMPLE_RATE as f32).tan();
             //     let norm = 1.0 / (1.0 + k / self.q + k * k);
 
             //     b0 = k * k * norm;
@@ -110,9 +110,9 @@ impl Filter {
             // }
             FilterType::Lowpass => {
                 // clamp to prevent the filter becoming unstable
-                let freq = (self.frequency + (self.filter_offset_in * 10_000.0)).clamp(1.0, SAMPLE_RATE as f64 * 0.5);
+                let freq = (self.frequency + (self.filter_offset_in * 10_000.0)).clamp(1.0, SAMPLE_RATE as f32 * 0.5);
 
-                let n = 1.0 / (PI * freq / SAMPLE_RATE as f64);
+                let n = 1.0 / (PI * freq / SAMPLE_RATE as f32);
                 let n_squared = n * n;
                 let inv_q = 1.0 / self.q;
                 let c1 = 1.0 / (1.0 + inv_q * n + n_squared);
@@ -138,9 +138,9 @@ impl Filter {
     pub fn get_filter_type(&self) -> FilterType { self.filter_type }
     pub fn set_filter_type(&mut self, filter_type: FilterType) { self.dirty = true; self.filter_type = filter_type; }
 
-    pub fn get_frequency(&self) -> f64 { self.frequency }
-    pub fn set_frequency(&mut self, frequency: f64) { self.dirty = true; self.frequency = frequency; }
+    pub fn get_frequency(&self) -> f32 { self.frequency }
+    pub fn set_frequency(&mut self, frequency: f32) { self.dirty = true; self.frequency = frequency; }
 
-    pub fn get_q(&self) -> f64 { self.q }
-    pub fn set_q(&mut self, q: f64) { self.dirty = true; self.q = q; }
+    pub fn get_q(&self) -> f32 { self.q }
+    pub fn set_q(&mut self, q: f32) { self.dirty = true; self.q = q; }
 }

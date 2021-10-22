@@ -8,8 +8,8 @@ use std::ptr;
 
 pub trait Node {
     fn process(&mut self);
-    fn receive_audio(&mut self, input_type: InputType, input: f64);
-    fn get_output_audio(&self, output_type: OutputType) -> f64;
+    fn receive_audio(&mut self, input_type: InputType, input: f32);
+    fn get_output_audio(&self, output_type: OutputType) -> f32;
 }
 
 #[derive(Debug)]

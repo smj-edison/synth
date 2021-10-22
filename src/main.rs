@@ -46,7 +46,7 @@ fn create_test_gain() -> Gain {
     Gain::new()
 }
 
-fn one_sample(envelope: &mut Envelope, osc: &mut SawOscillatorNode, lfo: &mut SinOscillatorNode, filter: &mut Filter, gain: &mut Gain, gate_value: f64, sample_index: i32) -> f64 {
+fn one_sample(envelope: &mut Envelope, osc: &mut SawOscillatorNode, lfo: &mut SinOscillatorNode, filter: &mut Filter, gain: &mut Gain, gate_value: f32, sample_index: i32) -> f32 {
     for i in 0..50 {
         osc.process();
     }
@@ -69,7 +69,7 @@ fn one_sample(envelope: &mut Envelope, osc: &mut SawOscillatorNode, lfo: &mut Si
     filter.get_output_audio(OutputType::Out)
 }
 
-fn write_to_file(output_file: &mut std::fs::File, data: &[f64]) {
+fn write_to_file(output_file: &mut std::fs::File, data: &[f32]) {
     let mut data_out = [0_u8; BUFFER_SIZE * 4];
 
     // TODO: would memcpy work here faster?
@@ -102,7 +102,7 @@ fn main() {
     let attack_time = 20;
 
     loop {
-        let mut buffer = [0_f64; BUFFER_SIZE];
+        let mut buffer = [0_f32; BUFFER_SIZE];
 
         for i in 0..BUFFER_SIZE {
             buffer[i] = one_sample(&mut envelope, &mut osc, &mut lfo, &mut filter, &mut gain, if buffer_index > attack_time { 0.0 } else { 1.0 }, sample_index);

@@ -2,7 +2,7 @@ use pulse::sample;
 
 use crate::constants::TWO_PI;
 
-const SIN_WAVETABLE: [f64; 256] = [
+const SIN_WAVETABLE: [f32; 256] = [
     0.0, 0.024541228522912288, 0.049067674327418015, 0.07356456359966743, 0.0980171403295606, 0.1224106751992162, 0.14673047445536175,
     0.17096188876030122, 0.19509032201612825, 0.2191012401568698, 0.24298017990326387, 0.26671275747489837, 0.29028467725446233,
     0.3136817403988915, 0.33688985339222005, 0.3598950365349881, 0.3826834323650898, 0.40524131400498986, 0.4275550934302821,
@@ -49,15 +49,12 @@ const SIN_WAVETABLE: [f64; 256] = [
 ];
 
 
-/// This assumes the phase is already normalized
-pub fn fast_sin(phase: f64) -> f64 {
-    let norm_phase = ((phase % TWO_PI) / TWO_PI) * SIN_WAVETABLE.len() as f64;
+pub fn fast_sin(phase: f32) -> f32 {
+    let norm_phase = ((phase % TWO_PI) / TWO_PI) * SIN_WAVETABLE.len() as f32;
 
     // find closest neighbor
-    let sample_index_f = norm_phase.floor();
-    let between_amount = norm_phase - sample_index_f;
-
-    let sample_index = sample_index_f as usize;
+    let sample_index = norm_phase as usize;
+    let between_amount = norm_phase - sample_index as f32;
 
     let before = SIN_WAVETABLE[sample_index];
     let after = SIN_WAVETABLE[(sample_index + 1) % SIN_WAVETABLE.len()];
@@ -65,6 +62,20 @@ pub fn fast_sin(phase: f64) -> f64 {
     lerp(before, after, between_amount)
 }
 
-fn lerp(start: f64, end: f64, amount: f64) -> f64 {
+/// this assumes phase is between 0 and 1
+pub fn fast_sin_norm_phase(phase: f32) -> f32 {
+    let norm_phase = phase * SIN_WAVETABLE.len() as f32;
+
+    // find closest neighbor
+    let sample_index = norm_phase as usize;
+    let between_amount = norm_phase - sample_index as f32;
+
+    let before = SIN_WAVETABLE[sample_index];
+    let after = SIN_WAVETABLE[(sample_index + 1) % SIN_WAVETABLE.len()];
+
+    lerp(before, after, between_amount)
+}
+
+fn lerp(start: f32, end: f32, amount: f32) -> f32 {
     (end - start) * amount + start
 }

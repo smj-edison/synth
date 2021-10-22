@@ -10,25 +10,25 @@ pub enum EnvelopeState {
 }
 
 pub struct Envelope {
-    attack: f64,
-    decay: f64,
-    sustain: f64,
-    release: f64,
+    attack: f32,
+    decay: f32,
+    sustain: f32,
+    release: f32,
     state: EnvelopeState,
-    amplitude_position: f64, // between 0 and 1
+    amplitude_position: f32, // between 0 and 1
     // amplitude_anchor is the spot where the attack is being based on
     // if the note was pressed down again before a complete release, it should attack
     // based on the current amplitude, not jump to 0
-    amplitude_anchor: f64, // between 0 and 1
-    current_amplitude: f64, // between 0 and 1
-    input_gate: f64,
-    input_in: f64,
-    output_out: f64
+    amplitude_anchor: f32, // between 0 and 1
+    current_amplitude: f32, // between 0 and 1
+    input_gate: f32,
+    input_in: f32,
+    output_out: f32
 }
 
 // TODO: ADSR linear only
 impl Envelope {
-    pub fn new(attack: f64, decay: f64, sustain: f64, release: f64) -> Envelope {
+    pub fn new(attack: f32, decay: f32, sustain: f32, release: f32) -> Envelope {
         Envelope {
             attack: attack,
             decay: decay,
@@ -38,16 +38,16 @@ impl Envelope {
             amplitude_position: 0.0,
             amplitude_anchor: 0.0,
             current_amplitude: 0.0,
-            input_gate: 0_f64,
-            input_in: 0_f64,
-            output_out: 0_f64
+            input_gate: 0_f32,
+            input_in: 0_f32,
+            output_out: 0_f32
         }
     }
 
     fn process_gate_engaged(&mut self) {
         self.state = match &self.state {
             EnvelopeState::Attacking => {
-                let attack_rate = (1.0 / SAMPLE_RATE as f64) / self.attack;
+                let attack_rate = (1.0 / SAMPLE_RATE as f32) / self.attack;
                 self.amplitude_position += attack_rate;
 
                 // take `self.attack` seconds, even if attack started from not complete release
@@ -63,7 +63,7 @@ impl Envelope {
                 }                
             }
             EnvelopeState::Decaying => {
-                let decay_rate = (1.0 / SAMPLE_RATE as f64) / self.decay;
+                let decay_rate = (1.0 / SAMPLE_RATE as f32) / self.decay;
                 self.amplitude_position += decay_rate;
 
                 self.current_amplitude = decay(1.0, self.sustain, self.amplitude_position);
@@ -113,7 +113,7 @@ impl Envelope {
                 EnvelopeState::Releasing
             }
             EnvelopeState::Releasing => {
-                let release_rate = (1.0 / SAMPLE_RATE as f64) / self.release;
+                let release_rate = (1.0 / SAMPLE_RATE as f32) / self.release;
 
                 self.amplitude_position += release_rate;
 
@@ -130,7 +130,7 @@ impl Envelope {
 }
 
 impl Node for Envelope {
-    fn receive_audio(&mut self, input_type: InputType, input: f64) {
+    fn receive_audio(&mut self, input_type: InputType, input: f32) {
         match input_type {
             InputType::In => self.input_in = input,
             InputType::Gate => self.input_gate = input,
@@ -150,7 +150,7 @@ impl Node for Envelope {
         self.output_out = self.input_in * self.current_amplitude;
     }    
 
-    fn get_output_audio(&self, output_type: OutputType) -> f64 {
+    fn get_output_audio(&self, output_type: OutputType) -> f32 {
         match output_type {
             OutputType::Out => self.output_out,
             _ => panic!("Cannot output {:?}", output_type)
@@ -158,19 +158,19 @@ impl Node for Envelope {
     }
 }
 
-fn attack(start: f64, end: f64, amount: f64) -> f64 {
+fn attack(start: f32, end: f32, amount: f32) -> f32 {
     lerp(start, end, amount)
 }
 
-fn decay(start: f64, end: f64, amount: f64) -> f64 {
+fn decay(start: f32, end: f32, amount: f32) -> f32 {
     lerp(start, end, amount)
 }
 
-fn release(start: f64, end: f64, amount: f64) -> f64 {
+fn release(start: f32, end: f32, amount: f32) -> f32 {
     lerp(start, end, amount)
 }
 
 
-fn lerp(start: f64, end: f64, amount: f64) -> f64 {
+fn lerp(start: f32, end: f32, amount: f32) -> f32 {
     (end - start) * amount + start
 }
