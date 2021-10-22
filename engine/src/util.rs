@@ -62,9 +62,9 @@ pub fn fast_sin(phase: f32) -> f32 {
     lerp(before, after, between_amount)
 }
 
-/// this assumes phase is between 0 and 1
+/// this assumes phase is between 0 and 1, not 0 to TWO_PI
 pub fn fast_sin_norm_phase(phase: f32) -> f32 {
-    let norm_phase = phase * SIN_WAVETABLE.len() as f32;
+    let norm_phase = (phase % 1.0) * SIN_WAVETABLE.len() as f32;
 
     // find closest neighbor
     let sample_index = norm_phase as usize;

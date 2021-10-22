@@ -1,6 +1,7 @@
 pub mod node;
 pub mod backend;
 pub mod util;
+pub mod midi;
 
 pub mod config {
     pub struct SynthConfig {
