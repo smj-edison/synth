@@ -1,5 +1,6 @@
 pub mod node;
 pub mod backend;
+pub mod util;
 
 pub mod config {
     pub struct SynthConfig {
@@ -12,10 +13,6 @@ pub mod constants {
     pub const TWO_PI: f64 = PI * 2.0;
     pub const BUFFER_SIZE: usize = 512;
     pub const SAMPLE_RATE: u32 = 48_000;
-}
-
-pub mod util {
-
 }
 
 #[cfg(test)]

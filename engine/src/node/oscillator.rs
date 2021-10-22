@@ -1,6 +1,7 @@
 use crate::constants::{PI, TWO_PI, SAMPLE_RATE};
 
 use crate::node::{Node, InputType, OutputType};
+use crate::util::fast_sin;
 
 pub trait Oscillator {
     fn get_frequency(&self) -> f64;
@@ -100,7 +101,7 @@ impl Node for SawOscillatorNode {
         let mut sin_sum = 0.0;
 
         for harmonic_index in 1..num_harmonics {
-            sin_sum += (self.phase * harmonic_index as f64).sin() / harmonic_index as f64;
+            sin_sum += fast_sin(self.phase * harmonic_index as f64) / harmonic_index as f64;
         }
 
         //adjust the volume
