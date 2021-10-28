@@ -1,7 +1,11 @@
+#[macro_use]
+extern crate lazy_static;
+
 pub mod node;
 pub mod backend;
 pub mod util;
 pub mod midi;
+pub mod wave;
 
 pub mod config {
     pub struct SynthConfig {

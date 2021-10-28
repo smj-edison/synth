@@ -76,6 +76,6 @@ pub fn fast_sin_norm_phase(phase: f32) -> f32 {
     lerp(before, after, between_amount)
 }
 
-fn lerp(start: f32, end: f32, amount: f32) -> f32 {
+pub fn lerp(start: f32, end: f32, amount: f32) -> f32 {
     (end - start) * amount + start
 }
