@@ -6,7 +6,7 @@ pub const BASE_FREQUENCY: f32 = 16.0;
 pub const FREQUENCY_STEPS: usize = 14;
 
 lazy_static! {
-    static ref SINE_VALUES: [[f32; WAVETABLE_SIZE]; FREQUENCY_STEPS] = {
+    pub static ref SINE_VALUES: [[f32; WAVETABLE_SIZE]; FREQUENCY_STEPS] = {
         let mut wavetables = [[0_f32; WAVETABLE_SIZE]; FREQUENCY_STEPS];
 
         for i in 0..FREQUENCY_STEPS {
@@ -26,7 +26,7 @@ lazy_static! {
             let num_harmonics = ((SAMPLE_RATE / 2) as f32 / freq) as i32; // rounded down
 
             for j in 0..WAVETABLE_SIZE {
-                let phase = j as f32 / WAVETABLE_SIZE as f32 * PI;                
+                let phase = j as f32 / WAVETABLE_SIZE as f32 * TWO_PI;                
 
                 let mut sin_sum = 0.0;
 
@@ -68,7 +68,7 @@ lazy_static! {
         wavetables
     };
 
-    static ref TRIANGLE_VALUES: [[f32; WAVETABLE_SIZE]; FREQUENCY_STEPS] = {
+    pub static ref TRIANGLE_VALUES: [[f32; WAVETABLE_SIZE]; FREQUENCY_STEPS] = {
         let mut wavetables = [[0_f32; WAVETABLE_SIZE]; FREQUENCY_STEPS];
 
         for i in 0..FREQUENCY_STEPS {

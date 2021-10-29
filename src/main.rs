@@ -1,9 +1,10 @@
 use std::{thread, time::Duration, io::Write};
 
 use engine::constants::{BUFFER_SIZE, SAMPLE_RATE};
+use engine::wave::tables::SQUARE_VALUES;
 
 use engine::node::{Node, InputType, OutputType};
-use engine::node::oscillator::{Oscillator, SawOscillatorNode, SinOscillatorNode};
+use engine::node::oscillator::{Oscillator, OscillatorNode, Waveform};
 use engine::node::envelope::Envelope;
 use engine::node::gain::Gain;
 use engine::node::filter::{Filter, FilterType};
@@ -27,12 +28,12 @@ fn create_test_envelope() -> Envelope {
     )
 }
 
-fn create_test_oscillator() -> SawOscillatorNode {
-    SawOscillatorNode::new()
+fn create_test_oscillator() -> OscillatorNode {
+    OscillatorNode::new(Waveform::Square)
 }
 
-fn create_test_lfo() -> SinOscillatorNode {
-    let mut osc = SinOscillatorNode::new();
+fn create_test_lfo() -> OscillatorNode {
+    let mut osc = OscillatorNode::new(Waveform::Sine);
     osc.set_frequency(1.0);
 
     osc
@@ -46,10 +47,10 @@ fn create_test_gain() -> Gain {
     Gain::new()
 }
 
-fn one_sample(envelope: &mut Envelope, osc: &mut SawOscillatorNode, lfo: &mut SinOscillatorNode, filter: &mut Filter, gain: &mut Gain, gate_value: f32, sample_index: i32) -> f32 {
-    for i in 0..50 {
-        osc.process();
-    }
+fn one_sample(envelope: &mut Envelope, osc: &mut OscillatorNode, lfo: &mut OscillatorNode, filter: &mut Filter, gain: &mut Gain, gate_value: f32, sample_index: i32) -> f32 {
+    osc.process();
+
+    //osc.set_frequency(lfo.get_output_audio(OutputType::Out) * 500.0 + 700.0);
     
     lfo.process();
 
