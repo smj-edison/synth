@@ -10,12 +10,14 @@ pub type ExclusiveMessage = Vec<u8>;
 pub type ManufacturerID = [u8; 3];
 pub type TimecodeRate = u8;
 
+#[derive(Debug)]
 pub struct Timecode {
     hours: u8,
     minutes: u8,
     seconds: u8
 }
 
+#[derive(Debug)]
 pub enum SystemCommonMessageData {
     SystemExclusive { id: ManufacturerID, message: ExclusiveMessage },
     QuarterFrame { rate: TimecodeRate, time: Timecode }
@@ -24,6 +26,7 @@ pub enum SystemCommonMessageData {
     // Tune Request
 }
 
+#[derive(Debug)]
 pub enum SystemRealtimeMessageData {
     TimingClock,
     Start,
@@ -33,14 +36,20 @@ pub enum SystemRealtimeMessageData {
     Reset
 }
 
-pub enum MessageType {
+#[derive(Debug)]
+pub enum MidiData {
     NoteOff { channel: Channel, note: Note, velocity: Velocity },
     NoteOn { channel: Channel, note: Note, velocity: Velocity },
-    Aftertouch { channel: Channel, note: Note, pressue: Pressue },
+    Aftertouch { channel: Channel, note: Note, pressure: Pressue },
     ControlChange { channel: Channel, controller: ControlIndex, value: ControlValue },
     ProgramChange { channel: Channel, patch: Patch },
-    ChannelAftertouch { channel: Channel, pressue: Pressue },
+    ChannelAftertouch { channel: Channel, pressure: Pressue },
     PitchBend { channel: Channel, pitch_bend: Bend },
     SystemCommonMessage { data: SystemCommonMessageData },
     SystemRealtimeMessage { data: SystemRealtimeMessageData }
+}
+
+pub struct MidiMessage {
+    data: MidiData,
+    timestamp: u64
 }

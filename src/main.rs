@@ -12,6 +12,7 @@ use engine::node::filter::{Filter, FilterType};
 use engine::node::gain::Gain;
 use engine::node::oscillator::{Oscillator, OscillatorNode, Waveform};
 use engine::node::{InputType, Node, OutputType};
+use engine::midi::parse::MidiParser;
 
 //use engine::backend::
 
@@ -83,7 +84,8 @@ fn one_sample(
     );
     filter.process();
 
-    filter.get_output_audio(OutputType::Out)
+    //filter.get_output_audio(OutputType::Out)
+    0_f32
 }
 
 fn write_to_file(output_file: &mut std::fs::File, data: &[f32]) -> Result<(), Box<dyn Error>> {
@@ -107,6 +109,8 @@ fn write_to_file(output_file: &mut std::fs::File, data: &[f32]) -> Result<(), Bo
 fn wrapper() -> Result<(), Box<dyn Error>> {
     let mut output_file = std::fs::File::create("audio.raw").unwrap();
 
+    let mut parser = MidiParser::new();
+
     let backend = connect_backend()?;
     let midi_backend = connect_midi_backend()?;
 
@@ -125,12 +129,18 @@ fn wrapper() -> Result<(), Box<dyn Error>> {
         let midi_in = midi_backend.read().unwrap();
 
         if !midi_in.is_empty() {
-            println!("{:?}", midi_in);
+            parser.write(midi_in.as_slice())?;
+
+            while !parser.parsed.is_empty() {
+                let message = parser.parsed.pop().unwrap();
+
+                println!("{:?}", message);
+            }
         }
 
         let mut buffer = [0_f32; BUFFER_SIZE];
 
-        for sample in buffer.iter_mut().take(BUFFER_SIZE) {
+        for sample in buffer.iter_mut() {
             *sample = one_sample(
                 &mut envelope,
                 &mut osc,

@@ -1,3 +1,2 @@
-pub enum MidiMessage {
-    NoteOn(),
-}
+pub mod messages;
+pub mod parse;
