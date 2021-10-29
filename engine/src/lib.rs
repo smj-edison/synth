@@ -1,5 +1,6 @@
 #[macro_use]
 extern crate lazy_static;
+extern crate simple_error;
 
 pub mod node;
 pub mod backend;

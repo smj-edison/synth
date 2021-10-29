@@ -1,14 +1,14 @@
 use std::error::Error;
-use std::ffi::CString;
+use std::io::Read;
 
-use alsa::{Seq, Direction};
-use alsa::seq::{PortCap, PortType, Event};
+use simple_error::bail;
+use alsa::{Rawmidi, Direction};
 
 use crate::backend::MidiClientBackend;
 use crate::midi::MidiMessage;
 
 pub struct AlsaMidiClientBackend {
-    client: Option<Seq>,
+    client: Option<Rawmidi>,
     in_port: Option<i32>
 }
 
@@ -21,35 +21,46 @@ impl AlsaMidiClientBackend {
 }
 
 impl MidiClientBackend for AlsaMidiClientBackend {
-    fn read(&self) -> Result<Option<Vec<u8>>, Box<dyn Error>> {
-        let midi_in: Vec<MidiMessage> = vec![];
+    fn read(&self) -> Result<Vec<u8>, Box<dyn Error>> {
+        let mut out = [0_u8; 512];
 
-        let input = self.client.unwrap().input();
-
-        if input.event_input_pending(false)? == 0 {
-            return Ok(None)
+        let bytes_result = if let Some(client) = &self.client {
+            client.io().read(&mut out)
         } else {
-            while input.event_input_pending(false)? > 0 {
-                input.event_input()?.get_data()
+            bail!("Midi backend not initialized");
+        };
+
+        let bytes_read = match bytes_result {
+            Ok(bytes) => bytes,
+            Err(error) => {
+                if let Some(err) = error.raw_os_error() {
+                    if err == -11 {
+                        0_usize // there was nothing to read
+                    } else {
+                        return Err(Box::new(error))
+                    }
+                } else {
+                    return Err(Box::new(error))
+                }
             }
+        };
+
+        let mut buffer = vec![0; bytes_read];
+        
+        for i in 0..bytes_read {
+            buffer[i] = out[i];
         }
 
-        Ok(None)
+        Ok(buffer)
     }
 
     fn connect(&mut self) -> Result<(), Box<dyn Error>> {
-        self.client = Some(Seq::open(None, Some(Direction::Capture), true)?);
-        self.client.unwrap().set_client_name(CString::new("Midi Listener").unwrap().as_c_str());
-        self.in_port = Some(self.client.unwrap().create_simple_port(
-            CString::new("listen:in").unwrap().as_c_str(),
-            PortCap::WRITE|PortCap::SUBS_WRITE,
-            PortType::APPLICATION
+        self.client = Some(Rawmidi::new(
+            "hw:1,0,0",
+            Direction::Capture,
+            true
         )?);
 
         Ok(())
-    }
-
-    fn drain(&self) -> Result<(), Box<dyn Error>> {
-
     }
 }

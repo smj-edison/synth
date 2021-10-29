@@ -10,8 +10,7 @@ pub trait AudioClientBackend {
 }
 
 pub trait MidiClientBackend {
-    fn read(&self) -> Result<Option<Vec<u8>>, Box<dyn Error>>;
+    fn read(&self) -> Result<Vec<u8>, Box<dyn Error>>;
     fn connect(&mut self) -> Result<(), Box<dyn Error>>;
-    fn drain(&self) -> Result<(), Box<dyn Error>>;
 }
 
