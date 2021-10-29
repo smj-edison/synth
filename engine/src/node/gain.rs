@@ -37,3 +37,9 @@ impl Node for Gain {
         }
     }
 }
+
+impl Default for Gain {
+    fn default() -> Gain {
+        Gain::new()
+    }
+}

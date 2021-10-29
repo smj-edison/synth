@@ -22,6 +22,12 @@ impl Dummy {
     }
 }
 
+impl Default for Dummy {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Node for Dummy {
     fn receive_audio(&mut self, input_type: InputType, input: f32) {
         match input_type {

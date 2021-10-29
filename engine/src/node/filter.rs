@@ -64,9 +64,9 @@ impl Node for Filter {
 impl Filter {
     pub fn new(filter_type: FilterType, frequency: f32, q: f32) -> Filter {
         let mut new_filter = Filter {
-            filter_type: filter_type,
-            frequency: frequency,
-            q: q,
+            filter_type,
+            frequency,
+            q,
             a1: 0.0,
             a2: 0.0,
             b0: 1.0,

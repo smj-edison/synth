@@ -61,9 +61,7 @@ impl Node for OscillatorNode {
     }
 
     fn receive_audio(&mut self, input_type: InputType, _input: f32) {
-        match input_type {
-            _ => panic!("Cannot receive {:?}", input_type)
-        }
+        panic!("Cannot receive {:?}", input_type);
     }
 
     fn get_output_audio(&self, output_type: OutputType) -> f32 {

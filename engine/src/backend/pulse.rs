@@ -57,7 +57,7 @@ impl AudioClientBackend for PulseClientBackend {
 
             let num = data[i].to_le_bytes();
 
-            data_out[i * 4 + 0] = num[0];
+            data_out[i * 4    ] = num[0];
             data_out[i * 4 + 1] = num[1];
             data_out[i * 4 + 2] = num[2];
             data_out[i * 4 + 3] = num[3];
@@ -78,5 +78,11 @@ impl AudioClientBackend for PulseClientBackend {
         }?;
 
         Ok(())
+    }
+}
+
+impl Default for PulseClientBackend {
+    fn default() -> PulseClientBackend {
+        PulseClientBackend::new()
     }
 }

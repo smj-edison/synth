@@ -30,10 +30,10 @@ pub struct Envelope {
 impl Envelope {
     pub fn new(attack: f32, decay: f32, sustain: f32, release: f32) -> Envelope {
         Envelope {
-            attack: attack,
-            decay: decay,
-            sustain: sustain,
-            release: release,
+            attack,
+            decay,
+            sustain,
+            release,
             state: EnvelopeState::Releasing,
             amplitude_position: 0.0,
             amplitude_anchor: 0.0,

@@ -45,9 +45,7 @@ impl MidiClientBackend for AlsaMidiClientBackend {
 
         let mut buffer = vec![0; bytes_read];
         
-        for i in 0..bytes_read {
-            buffer[i] = out[i];
-        }
+        buffer[..bytes_read].clone_from_slice(&out[..bytes_read]);
 
         Ok(buffer)
     }
@@ -60,5 +58,11 @@ impl MidiClientBackend for AlsaMidiClientBackend {
         )?);
 
         Ok(())
+    }
+}
+
+impl Default for AlsaMidiClientBackend {
+    fn default() -> AlsaMidiClientBackend {
+        AlsaMidiClientBackend::new()
     }
 }
