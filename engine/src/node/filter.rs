@@ -95,35 +95,35 @@ impl Filter {
         let b2;
 
         match &self.filter_type {
-            // FilterType::Lowpass => {
-            //     let freq = (self.frequency + (self.filter_offset_in * 10_000.0)).clamp(0.0, SAMPLE_RATE as f32 * 0.5);
-            //     //println!("{}", freq);
-
-            //     let k = (PI * freq / SAMPLE_RATE as f32).tan();
-            //     let norm = 1.0 / (1.0 + k / self.q + k * k);
-
-            //     b0 = k * k * norm;
-            //     b1 = 2.0 * b0;
-            //     b2 = b0;
-            //     a1 = 2.0 * (k * k - 1.0) * norm;
-            //     a2 = (1.0 - k / self.q + k * k) * norm;
-            // }
             FilterType::Lowpass => {
-                // clamp to prevent the filter becoming unstable
-                let freq = (self.frequency + (self.filter_offset_in * 10_000.0)).clamp(1.0, SAMPLE_RATE as f32 * 0.5);
+                let freq = (self.frequency + (self.filter_offset_in * 10_000.0)).clamp(0.0, SAMPLE_RATE as f32 * 0.5);
+                //println!("{}", freq);
 
-                let n = 1.0 / (PI * freq / SAMPLE_RATE as f32);
-                let n_squared = n * n;
-                let inv_q = 1.0 / self.q;
-                let c1 = 1.0 / (1.0 + inv_q * n + n_squared);
+                let k = (PI * freq / SAMPLE_RATE as f32).tan();
+                let norm = 1.0 / (1.0 + k / self.q + k * k);
 
-                b0 = c1;
-                b1 = c1 * 2.0;
-                b2 = c1;
-
-                a1 = c1 * 2.0 * (1.0 - n_squared);
-                a2 = c1 * (1.0 - inv_q * n + n_squared);
+                b0 = k * k * norm;
+                b1 = 2.0 * b0;
+                b2 = b0;
+                a1 = 2.0 * (k * k - 1.0) * norm;
+                a2 = (1.0 - k / self.q + k * k) * norm;
             }
+            // FilterType::Lowpass => {
+            //     // clamp to prevent the filter becoming unstable
+            //     let freq = (self.frequency + (self.filter_offset_in * 10_000.0)).clamp(1.0, SAMPLE_RATE as f32 * 0.5);
+
+            //     let n = 1.0 / (PI * freq / SAMPLE_RATE as f32);
+            //     let n_squared = n * n;
+            //     let inv_q = 1.0 / self.q;
+            //     let c1 = 1.0 / (1.0 + inv_q * n + n_squared);
+
+            //     b0 = c1;
+            //     b1 = c1 * 2.0;
+            //     b2 = c1;
+
+            //     a1 = c1 * 2.0 * (1.0 - n_squared);
+            //     a2 = c1 * (1.0 - inv_q * n + n_squared);
+            // }
         };
 
         self.a1 = a1;
