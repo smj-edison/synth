@@ -1,5 +1,5 @@
+use crate::constants::{PI, SAMPLE_RATE, TWO_PI};
 use lazy_static;
-use crate::constants::{SAMPLE_RATE, PI, TWO_PI};
 
 pub const WAVETABLE_SIZE: usize = 256;
 pub const BASE_FREQUENCY: f32 = 16.0;
@@ -26,11 +26,11 @@ lazy_static! {
             let num_harmonics = ((SAMPLE_RATE / 2) as f32 / freq) as i32; // rounded down
 
             for j in 0..WAVETABLE_SIZE {
-                let phase = j as f32 / WAVETABLE_SIZE as f32 * TWO_PI;                
+                let phase = j as f32 / WAVETABLE_SIZE as f32 * TWO_PI;
 
                 let mut sin_sum = 0.0;
 
-                for harmonic_index in 1..num_harmonics {                    
+                for harmonic_index in 1..num_harmonics {
                     sin_sum += f32::sin(phase * harmonic_index as f32) / harmonic_index as f32;
                 }
 
@@ -81,7 +81,7 @@ lazy_static! {
                 let mut sin_sum = 0.0;
 
                 for harmonic_index in 1..num_harmonics {
-                    if harmonic_index % 4 == 1 {                        
+                    if harmonic_index % 4 == 1 {
                         sin_sum += f32::sin(phase * harmonic_index as f32) / (harmonic_index * harmonic_index) as f32;
                     } else if harmonic_index % 4 == 3 {
                         sin_sum -= f32::sin(phase * harmonic_index as f32) / (harmonic_index * harmonic_index) as f32;
@@ -96,5 +96,3 @@ lazy_static! {
         wavetables
     };
 }
-
-

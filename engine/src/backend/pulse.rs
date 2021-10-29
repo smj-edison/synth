@@ -1,21 +1,22 @@
 use std::error::Error;
 
+use psimple::Simple;
 use pulse::sample::Spec;
 use pulse::stream::Direction;
-use psimple::Simple;
 
 use crate::backend::AudioClientBackend;
 use crate::constants::{BUFFER_SIZE, SAMPLE_RATE};
 
 pub struct PulseClientBackend {
     pub pulse_spec: Option<pulse::sample::Spec>,
-    pub client: Option<psimple::Simple>
+    pub client: Option<psimple::Simple>,
 }
 
 impl PulseClientBackend {
     pub fn new() -> PulseClientBackend {
         PulseClientBackend {
-            pulse_spec: None, client: None
+            pulse_spec: None,
+            client: None,
         }
     }
 }
@@ -31,13 +32,13 @@ impl AudioClientBackend for PulseClientBackend {
 
         let s = Simple::new(
             None,                // Use the default server
-            "Synthesizer Test",    // Our application’s name
-            Direction::Playback,    // We want a playback stream
-            None,                   // Use the default device
-            "Music",         // Description of our stream
+            "Synthesizer Test",  // Our application’s name
+            Direction::Playback, // We want a playback stream
+            None,                // Use the default device
+            "Music",             // Description of our stream
             &spec,               // Our sample format
             None,                // Use default channel map
-            None                 // Use default buffering attributes
+            None,                // Use default buffering attributes
         )?;
 
         self.pulse_spec = Some(spec);
@@ -57,7 +58,7 @@ impl AudioClientBackend for PulseClientBackend {
 
             let num = data[i].to_le_bytes();
 
-            data_out[i * 4    ] = num[0];
+            data_out[i * 4] = num[0];
             data_out[i * 4 + 1] = num[1];
             data_out[i * 4 + 2] = num[2];
             data_out[i * 4 + 3] = num[3];

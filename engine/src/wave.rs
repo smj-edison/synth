@@ -1,2 +1,2 @@
-pub mod tables;
 pub mod interpolate;
+pub mod tables;

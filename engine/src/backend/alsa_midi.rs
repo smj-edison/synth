@@ -1,20 +1,18 @@
 use std::error::Error;
 use std::io::Read;
 
+use alsa::{Direction, Rawmidi};
 use simple_error::bail;
-use alsa::{Rawmidi, Direction};
 
 use crate::backend::MidiClientBackend;
 
 pub struct AlsaMidiClientBackend {
-    client: Option<Rawmidi>
+    client: Option<Rawmidi>,
 }
 
 impl AlsaMidiClientBackend {
     pub fn new() -> AlsaMidiClientBackend {
-        AlsaMidiClientBackend {
-            client: None
-        }
+        AlsaMidiClientBackend { client: None }
     }
 }
 
@@ -35,27 +33,23 @@ impl MidiClientBackend for AlsaMidiClientBackend {
                     if err == -11 {
                         0_usize // there was nothing to read
                     } else {
-                        return Err(Box::new(error))
+                        return Err(Box::new(error));
                     }
                 } else {
-                    return Err(Box::new(error))
+                    return Err(Box::new(error));
                 }
             }
         };
 
         let mut buffer = vec![0; bytes_read];
-        
+
         buffer[..bytes_read].clone_from_slice(&out[..bytes_read]);
 
         Ok(buffer)
     }
 
     fn connect(&mut self) -> Result<(), Box<dyn Error>> {
-        self.client = Some(Rawmidi::new(
-            "hw:1,0,0",
-            Direction::Capture,
-            true
-        )?);
+        self.client = Some(Rawmidi::new("hw:1,0,0", Direction::Capture, true)?);
 
         Ok(())
     }

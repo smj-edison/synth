@@ -2,15 +2,15 @@
 extern crate lazy_static;
 extern crate simple_error;
 
-pub mod node;
 pub mod backend;
-pub mod util;
 pub mod midi;
+pub mod node;
+pub mod util;
 pub mod wave;
 
 pub mod config {
     pub struct SynthConfig {
-        pub samples_per_second: u32
+        pub samples_per_second: u32,
     }
 }
 

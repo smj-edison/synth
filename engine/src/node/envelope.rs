@@ -1,12 +1,12 @@
-use crate::constants::{SAMPLE_RATE};
+use crate::constants::SAMPLE_RATE;
 
-use crate::node::{Node, InputType, OutputType};
+use crate::node::{InputType, Node, OutputType};
 
 pub enum EnvelopeState {
     Attacking,
     Decaying,
     Sustaining,
-    Releasing
+    Releasing,
 }
 
 pub struct Envelope {
@@ -19,11 +19,11 @@ pub struct Envelope {
     // amplitude_anchor is the spot where the attack is being based on
     // if the note was pressed down again before a complete release, it should attack
     // based on the current amplitude, not jump to 0
-    amplitude_anchor: f32, // between 0 and 1
+    amplitude_anchor: f32,  // between 0 and 1
     current_amplitude: f32, // between 0 and 1
     input_gate: f32,
     input_in: f32,
-    output_out: f32
+    output_out: f32,
 }
 
 // TODO: ADSR linear only
@@ -40,7 +40,7 @@ impl Envelope {
             current_amplitude: 0.0,
             input_gate: 0_f32,
             input_in: 0_f32,
-            output_out: 0_f32
+            output_out: 0_f32,
         }
     }
 
@@ -51,7 +51,8 @@ impl Envelope {
                 self.amplitude_position += attack_rate;
 
                 // take `self.attack` seconds, even if attack started from not complete release
-                self.current_amplitude = attack(self.amplitude_anchor, 1.0, self.amplitude_position);
+                self.current_amplitude =
+                    attack(self.amplitude_anchor, 1.0, self.amplitude_position);
 
                 if self.current_amplitude >= 1.0 {
                     self.current_amplitude = 1.0;
@@ -60,7 +61,7 @@ impl Envelope {
                     EnvelopeState::Decaying
                 } else {
                     EnvelopeState::Attacking
-                }                
+                }
             }
             EnvelopeState::Decaying => {
                 let decay_rate = (1.0 / SAMPLE_RATE as f32) / self.decay;
@@ -75,7 +76,7 @@ impl Envelope {
                     EnvelopeState::Sustaining
                 } else {
                     EnvelopeState::Decaying
-                }                
+                }
             }
             EnvelopeState::Sustaining => {
                 self.current_amplitude = self.sustain;
@@ -104,7 +105,7 @@ impl Envelope {
                 self.amplitude_position = 0.0;
                 self.amplitude_anchor = self.current_amplitude;
 
-                EnvelopeState::Releasing              
+                EnvelopeState::Releasing
             }
             EnvelopeState::Sustaining => {
                 self.amplitude_position = 0.0;
@@ -119,9 +120,10 @@ impl Envelope {
 
                 // take `self.attack` seconds, even if attack started from not complete release
                 if self.amplitude_position <= 1.0 {
-                    self.current_amplitude = release(self.amplitude_anchor, 0.0, self.amplitude_position);
+                    self.current_amplitude =
+                        release(self.amplitude_anchor, 0.0, self.amplitude_position);
                     self.current_amplitude = self.current_amplitude.clamp(0.0, 1.0);
-                }                
+                }
 
                 EnvelopeState::Releasing
             }
@@ -134,7 +136,7 @@ impl Node for Envelope {
         match input_type {
             InputType::In => self.input_in = input,
             InputType::Gate => self.input_gate = input,
-            _ => panic!("Cannot receive {:?}", input_type)
+            _ => panic!("Cannot receive {:?}", input_type),
         }
     }
 
@@ -148,12 +150,12 @@ impl Node for Envelope {
         }
 
         self.output_out = self.input_in * self.current_amplitude;
-    }    
+    }
 
     fn get_output_audio(&self, output_type: OutputType) -> f32 {
         match output_type {
             OutputType::Out => self.output_out,
-            _ => panic!("Cannot output {:?}", output_type)
+            _ => panic!("Cannot output {:?}", output_type),
         }
     }
 }
@@ -169,7 +171,6 @@ fn decay(start: f32, end: f32, amount: f32) -> f32 {
 fn release(start: f32, end: f32, amount: f32) -> f32 {
     lerp(start, end, amount)
 }
-
 
 fn lerp(start: f32, end: f32, amount: f32) -> f32 {
     (end - start) * amount + start

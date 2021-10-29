@@ -1,8 +1,8 @@
-pub mod oscillator;
+pub mod dummy;
 pub mod envelope;
 pub mod filter;
-pub mod dummy;
 pub mod gain;
+pub mod oscillator;
 
 pub trait Node {
     fn process(&mut self);
@@ -12,10 +12,14 @@ pub trait Node {
 
 #[derive(Debug)]
 pub enum InputType {
-    In, Gate, Detune, FilterOffset
+    In,
+    Gate,
+    Detune,
+    FilterOffset,
 }
 
 #[derive(Debug)]
 pub enum OutputType {
-    Out, None
+    Out,
+    None,
 }

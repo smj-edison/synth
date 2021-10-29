@@ -1,5 +1,5 @@
-pub mod pulse;
 pub mod alsa_midi;
+pub mod pulse;
 
 use std::error::Error;
 
@@ -13,4 +13,3 @@ pub trait MidiClientBackend {
     fn read(&self) -> Result<Vec<u8>, Box<dyn Error>>;
     fn connect(&mut self) -> Result<(), Box<dyn Error>>;
 }
-

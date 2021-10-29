@@ -1,9 +1,9 @@
-use crate::constants::{TWO_PI, SAMPLE_RATE};
+use crate::constants::{SAMPLE_RATE, TWO_PI};
 
-use crate::node::{Node, InputType, OutputType};
-use crate::wave::tables::{WAVETABLE_SIZE, FREQUENCY_STEPS};
-use crate::wave::tables::{SINE_VALUES, SQUARE_VALUES, SAWTOOTH_VALUES, TRIANGLE_VALUES};
+use crate::node::{InputType, Node, OutputType};
 use crate::wave::interpolate::interpolate;
+use crate::wave::tables::{FREQUENCY_STEPS, WAVETABLE_SIZE};
+use crate::wave::tables::{SAWTOOTH_VALUES, SINE_VALUES, SQUARE_VALUES, TRIANGLE_VALUES};
 
 pub trait Oscillator {
     fn get_frequency(&self) -> f32;
@@ -14,11 +14,11 @@ pub enum Waveform {
     Sine,
     Triangle,
     Sawtooth,
-    Square
+    Square,
 }
 
 /// A sinsouid oscillator
-/// 
+///
 /// # Inputs
 /// None currently.
 ///
@@ -28,12 +28,12 @@ pub struct OscillatorNode {
     phase: f32,
     frequency: f32,
     output_out: f32,
-    wavetable: &'static[[f32; WAVETABLE_SIZE]; FREQUENCY_STEPS]
+    wavetable: &'static [[f32; WAVETABLE_SIZE]; FREQUENCY_STEPS],
 }
 
 impl OscillatorNode {
     pub fn new(waveform: Waveform) -> OscillatorNode {
-        OscillatorNode { 
+        OscillatorNode {
             phase: 0_f32,
             frequency: 440_f32,
             output_out: 0_f32,
@@ -41,15 +41,19 @@ impl OscillatorNode {
                 Waveform::Sine => &*SINE_VALUES,
                 Waveform::Square => &*SQUARE_VALUES,
                 Waveform::Sawtooth => &*SAWTOOTH_VALUES,
-                Waveform::Triangle => &*TRIANGLE_VALUES
-            }
+                Waveform::Triangle => &*TRIANGLE_VALUES,
+            },
         }
     }
 }
 
 impl Oscillator for OscillatorNode {
-    fn get_frequency(&self) -> f32 { self.frequency }
-    fn set_frequency(&mut self, frequency: f32) { self.frequency = frequency; }
+    fn get_frequency(&self) -> f32 {
+        self.frequency
+    }
+    fn set_frequency(&mut self, frequency: f32) {
+        self.frequency = frequency;
+    }
 }
 
 impl Node for OscillatorNode {
@@ -67,7 +71,7 @@ impl Node for OscillatorNode {
     fn get_output_audio(&self, output_type: OutputType) -> f32 {
         match output_type {
             OutputType::Out => self.output_out,
-            _ => panic!("Cannot output {:?}", output_type)
+            _ => panic!("Cannot output {:?}", output_type),
         }
     }
 }

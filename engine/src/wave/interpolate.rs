@@ -1,9 +1,13 @@
-use crate::util::lerp;
 use crate::constants::TWO_PI;
+use crate::util::lerp;
 
-use super::tables::{WAVETABLE_SIZE, BASE_FREQUENCY, FREQUENCY_STEPS};
+use super::tables::{BASE_FREQUENCY, FREQUENCY_STEPS, WAVETABLE_SIZE};
 
-pub fn interpolate(wavetable: &[[f32; WAVETABLE_SIZE]; FREQUENCY_STEPS], frequency: f32, phase: f32) -> f32 {
+pub fn interpolate(
+    wavetable: &[[f32; WAVETABLE_SIZE]; FREQUENCY_STEPS],
+    frequency: f32,
+    phase: f32,
+) -> f32 {
     let phase = (phase / TWO_PI) % 1.0; // make phase bound
 
     let wavetable_index = ((frequency / BASE_FREQUENCY).ln() / 2_f32.ln()) as usize; // which wavetable to use (rounded down)
@@ -20,6 +24,10 @@ pub fn interpolate(wavetable: &[[f32; WAVETABLE_SIZE]; FREQUENCY_STEPS], frequen
     let sample_lower = lerp(lower_old, lower_new, sample_offset);
     let sample_higher = lerp(upper_old, upper_new, sample_offset);
 
-    lerp(sample_lower, sample_higher, (frequency - (BASE_FREQUENCY * 2_f32.powi(wavetable_index as i32))) / frequency_difference)    
+    lerp(
+        sample_lower,
+        sample_higher,
+        (frequency - (BASE_FREQUENCY * 2_f32.powi(wavetable_index as i32))) / frequency_difference,
+    )
     //sample_higher
 }

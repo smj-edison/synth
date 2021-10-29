@@ -1,9 +1,9 @@
-use crate::node::{Node, InputType, OutputType};
-use crate::constants::{SAMPLE_RATE, PI};
+use crate::constants::{PI, SAMPLE_RATE};
+use crate::node::{InputType, Node, OutputType};
 
 #[derive(Clone, Copy)]
 pub enum FilterType {
-    Lowpass
+    Lowpass,
 }
 
 pub struct Filter {
@@ -22,7 +22,7 @@ pub struct Filter {
     prev_output_2: f32,
     filter_offset_in: f32,
     input_in: f32,
-    output_out: f32
+    output_out: f32,
 }
 
 impl Node for Filter {
@@ -30,19 +30,18 @@ impl Node for Filter {
         match input_type {
             InputType::FilterOffset => self.filter_offset_in = input,
             InputType::In => self.input_in = input,
-            _ => panic!("Cannot receive {:?}", input_type)
+            _ => panic!("Cannot receive {:?}", input_type),
         }
     }
 
     fn process(&mut self) {
         self.recompute();
 
-        let output = 
-            (self.b0 * self.input_in) +
-            (self.b1 * self.prev_input_1) +
-            (self.b2 * self.prev_input_2) -
-            (self.a1 * self.prev_output_1) -
-            (self.a2 * self.prev_output_2);
+        let output = (self.b0 * self.input_in)
+            + (self.b1 * self.prev_input_1)
+            + (self.b2 * self.prev_input_2)
+            - (self.a1 * self.prev_output_1)
+            - (self.a2 * self.prev_output_2);
 
         self.prev_input_2 = self.prev_input_1;
         self.prev_input_1 = self.input_in;
@@ -56,7 +55,7 @@ impl Node for Filter {
     fn get_output_audio(&self, output_type: OutputType) -> f32 {
         match output_type {
             OutputType::Out => self.output_out,
-            _ => panic!("Cannot output {:?}", output_type)
+            _ => panic!("Cannot output {:?}", output_type),
         }
     }
 }
@@ -79,7 +78,7 @@ impl Filter {
             filter_offset_in: 0.0,
             input_in: 0_f32,
             output_out: 0_f32,
-            dirty: true
+            dirty: true,
         };
 
         new_filter.recompute();
@@ -96,7 +95,8 @@ impl Filter {
 
         match &self.filter_type {
             FilterType::Lowpass => {
-                let freq = (self.frequency + (self.filter_offset_in * 10_000.0)).clamp(0.0, SAMPLE_RATE as f32 * 0.5);
+                let freq = (self.frequency + (self.filter_offset_in * 10_000.0))
+                    .clamp(0.0, SAMPLE_RATE as f32 * 0.5);
                 //println!("{}", freq);
 
                 let k = (PI * freq / SAMPLE_RATE as f32).tan();
@@ -107,23 +107,22 @@ impl Filter {
                 b2 = b0;
                 a1 = 2.0 * (k * k - 1.0) * norm;
                 a2 = (1.0 - k / self.q + k * k) * norm;
-            }
-            // FilterType::Lowpass => {
-            //     // clamp to prevent the filter becoming unstable
-            //     let freq = (self.frequency + (self.filter_offset_in * 10_000.0)).clamp(1.0, SAMPLE_RATE as f32 * 0.5);
+            } // FilterType::Lowpass => {
+              //     // clamp to prevent the filter becoming unstable
+              //     let freq = (self.frequency + (self.filter_offset_in * 10_000.0)).clamp(1.0, SAMPLE_RATE as f32 * 0.5);
 
-            //     let n = 1.0 / (PI * freq / SAMPLE_RATE as f32);
-            //     let n_squared = n * n;
-            //     let inv_q = 1.0 / self.q;
-            //     let c1 = 1.0 / (1.0 + inv_q * n + n_squared);
+              //     let n = 1.0 / (PI * freq / SAMPLE_RATE as f32);
+              //     let n_squared = n * n;
+              //     let inv_q = 1.0 / self.q;
+              //     let c1 = 1.0 / (1.0 + inv_q * n + n_squared);
 
-            //     b0 = c1;
-            //     b1 = c1 * 2.0;
-            //     b2 = c1;
+              //     b0 = c1;
+              //     b1 = c1 * 2.0;
+              //     b2 = c1;
 
-            //     a1 = c1 * 2.0 * (1.0 - n_squared);
-            //     a2 = c1 * (1.0 - inv_q * n + n_squared);
-            // }
+              //     a1 = c1 * 2.0 * (1.0 - n_squared);
+              //     a2 = c1 * (1.0 - inv_q * n + n_squared);
+              // }
         };
 
         self.a1 = a1;
@@ -135,12 +134,27 @@ impl Filter {
         self.dirty = false;
     }
 
-    pub fn get_filter_type(&self) -> FilterType { self.filter_type }
-    pub fn set_filter_type(&mut self, filter_type: FilterType) { self.dirty = true; self.filter_type = filter_type; }
+    pub fn get_filter_type(&self) -> FilterType {
+        self.filter_type
+    }
+    pub fn set_filter_type(&mut self, filter_type: FilterType) {
+        self.dirty = true;
+        self.filter_type = filter_type;
+    }
 
-    pub fn get_frequency(&self) -> f32 { self.frequency }
-    pub fn set_frequency(&mut self, frequency: f32) { self.dirty = true; self.frequency = frequency; }
+    pub fn get_frequency(&self) -> f32 {
+        self.frequency
+    }
+    pub fn set_frequency(&mut self, frequency: f32) {
+        self.dirty = true;
+        self.frequency = frequency;
+    }
 
-    pub fn get_q(&self) -> f32 { self.q }
-    pub fn set_q(&mut self, q: f32) { self.dirty = true; self.q = q; }
+    pub fn get_q(&self) -> f32 {
+        self.q
+    }
+    pub fn set_q(&mut self, q: f32) {
+        self.dirty = true;
+        self.q = q;
+    }
 }
