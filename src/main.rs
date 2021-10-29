@@ -1,6 +1,8 @@
+use std::error::Error;
 use std::{thread, time::Duration, io::Write};
 
 use engine::constants::{BUFFER_SIZE, SAMPLE_RATE};
+use engine::midi;
 use engine::wave::tables::SQUARE_VALUES;
 
 use engine::node::{Node, InputType, OutputType};
@@ -9,11 +11,19 @@ use engine::node::envelope::Envelope;
 use engine::node::gain::Gain;
 use engine::node::filter::{Filter, FilterType};
 use engine::backend::{AudioClientBackend, pulse::PulseClientBackend};
+use engine::backend::{MidiClientBackend, alsa_midi::AlsaMidiClientBackend};
 
 //use engine::backend::
 
 fn connect_backend() -> Box<dyn AudioClientBackend> {
     let mut backend:Box<dyn AudioClientBackend> = Box::new(PulseClientBackend::new());
+    backend.connect();
+
+    backend
+}
+
+fn connect_midi_backend() -> Box<dyn MidiClientBackend> {
+    let mut backend:Box<dyn MidiClientBackend> = Box::new(AlsaMidiClientBackend::new());
     backend.connect();
 
     backend
@@ -90,6 +100,7 @@ fn main() {
     let mut output_file = std::fs::File::create("audio.raw").unwrap();
 
     let backend = connect_backend();
+    let midi_backend = connect_midi_backend();
 
     let mut osc = create_test_oscillator();
     let mut lfo = create_test_lfo();
@@ -103,6 +114,12 @@ fn main() {
     let attack_time = 20;
 
     loop {
+        let midi_in = midi_backend.read().unwrap();
+
+        if midi_in.len() > 0 {
+            println!("{:?}", midi_in);
+        }
+
         let mut buffer = [0_f32; BUFFER_SIZE];
 
         for i in 0..BUFFER_SIZE {
@@ -114,7 +131,7 @@ fn main() {
         write_to_file(&mut output_file, &buffer);
         
         if buffer_index > 3 {
-            thread::sleep(Duration::from_millis(((BUFFER_SIZE as u32) / SAMPLE_RATE as u32).into()));
+            thread::sleep(Duration::from_millis(((SAMPLE_RATE as u32 / BUFFER_SIZE as u32) / 1000) as u64).into());
         }
         
         buffer_index += 1;
