@@ -1,9 +1,7 @@
-use std::error::Error;
 use std::{thread, time::Duration, io::Write};
+use std::error::Error;
 
 use engine::constants::{BUFFER_SIZE, SAMPLE_RATE};
-use engine::midi;
-use engine::wave::tables::SQUARE_VALUES;
 
 use engine::node::{Node, InputType, OutputType};
 use engine::node::oscillator::{Oscillator, OscillatorNode, Waveform};
@@ -15,18 +13,18 @@ use engine::backend::{MidiClientBackend, alsa_midi::AlsaMidiClientBackend};
 
 //use engine::backend::
 
-fn connect_backend() -> Box<dyn AudioClientBackend> {
+fn connect_backend() -> Result<Box<dyn AudioClientBackend>, Box<dyn Error>> {
     let mut backend:Box<dyn AudioClientBackend> = Box::new(PulseClientBackend::new());
-    backend.connect();
+    backend.connect()?;
 
-    backend
+    Ok(backend)
 }
 
-fn connect_midi_backend() -> Box<dyn MidiClientBackend> {
+fn connect_midi_backend() -> Result<Box<dyn MidiClientBackend>, Box<dyn Error>> {
     let mut backend:Box<dyn MidiClientBackend> = Box::new(AlsaMidiClientBackend::new());
-    backend.connect();
+    backend.connect()?;
 
-    backend
+    Ok(backend)
 }
 
 fn create_test_envelope() -> Envelope {
@@ -57,7 +55,7 @@ fn create_test_gain() -> Gain {
     Gain::new()
 }
 
-fn one_sample(envelope: &mut Envelope, osc: &mut OscillatorNode, lfo: &mut OscillatorNode, filter: &mut Filter, gain: &mut Gain, gate_value: f32, sample_index: i32) -> f32 {
+fn one_sample(envelope: &mut Envelope, osc: &mut OscillatorNode, lfo: &mut OscillatorNode, filter: &mut Filter, gain: &mut Gain, gate_value: f32, _sample_index: i32) -> f32 {
     osc.process();
 
     //osc.set_frequency(lfo.get_output_audio(OutputType::Out) * 500.0 + 700.0);
@@ -80,27 +78,29 @@ fn one_sample(envelope: &mut Envelope, osc: &mut OscillatorNode, lfo: &mut Oscil
     filter.get_output_audio(OutputType::Out)
 }
 
-fn write_to_file(output_file: &mut std::fs::File, data: &[f32]) {
+fn write_to_file(output_file: &mut std::fs::File, data: &[f32]) -> Result<(), Box<dyn Error>> {
     let mut data_out = [0_u8; BUFFER_SIZE * 4];
 
     // TODO: would memcpy work here faster?
     for i in 0..BUFFER_SIZE {
         let num = (data[i] as f32).to_le_bytes();
 
-        data_out[i * 4 + 0] = num[0];
+        data_out[i * 4   ] = num[0];
         data_out[i * 4 + 1] = num[1];
         data_out[i * 4 + 2] = num[2];
         data_out[i * 4 + 3] = num[3];
     }
 
-    output_file.write(&data_out);
+    output_file.write_all(&data_out)?;
+
+    Ok(())
 }
 
-fn main() {
+fn wrapper() -> Result<(), Box<dyn Error>> {
     let mut output_file = std::fs::File::create("audio.raw").unwrap();
 
-    let backend = connect_backend();
-    let midi_backend = connect_midi_backend();
+    let backend = connect_backend()?;
+    let midi_backend = connect_midi_backend()?;
 
     let mut osc = create_test_oscillator();
     let mut lfo = create_test_lfo();
@@ -116,24 +116,30 @@ fn main() {
     loop {
         let midi_in = midi_backend.read().unwrap();
 
-        if midi_in.len() > 0 {
+        if !midi_in.is_empty() {
             println!("{:?}", midi_in);
         }
 
         let mut buffer = [0_f32; BUFFER_SIZE];
 
-        for i in 0..BUFFER_SIZE {
-            buffer[i] = one_sample(&mut envelope, &mut osc, &mut lfo, &mut filter, &mut gain, if buffer_index > attack_time { 0.0 } else { 1.0 }, sample_index);
+        for sample in buffer.iter_mut().take(BUFFER_SIZE) {
+            *sample = one_sample(&mut envelope, &mut osc, &mut lfo, &mut filter, &mut gain, if buffer_index > attack_time { 0.0 } else { 1.0 }, sample_index);
             sample_index += 1;
         }
 
-        backend.write(&buffer);
-        write_to_file(&mut output_file, &buffer);
+        backend.write(&buffer)?;
+        write_to_file(&mut output_file, &buffer)?;
         
         if buffer_index > 3 {
-            thread::sleep(Duration::from_millis(((SAMPLE_RATE as u32 / BUFFER_SIZE as u32) / 1000) as u64).into());
+            thread::sleep(Duration::from_millis(((SAMPLE_RATE as u32 / BUFFER_SIZE as u32) / 1000) as u64));
         }
         
         buffer_index += 1;
+    }
+}
+
+fn main() {
+    if let Err(error) = wrapper() {
+        println!("{:?}", error);
     }
 }

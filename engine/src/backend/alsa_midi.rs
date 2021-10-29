@@ -5,17 +5,15 @@ use simple_error::bail;
 use alsa::{Rawmidi, Direction};
 
 use crate::backend::MidiClientBackend;
-use crate::midi::MidiMessage;
 
 pub struct AlsaMidiClientBackend {
-    client: Option<Rawmidi>,
-    in_port: Option<i32>
+    client: Option<Rawmidi>
 }
 
 impl AlsaMidiClientBackend {
     pub fn new() -> AlsaMidiClientBackend {
         AlsaMidiClientBackend {
-            client: None, in_port: None
+            client: None
         }
     }
 }

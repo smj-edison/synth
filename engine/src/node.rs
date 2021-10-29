@@ -19,7 +19,7 @@ pub enum InputType {
 
 #[derive(Debug)]
 pub enum OutputType {
-    Out
+    Out, None
 }
 
 // Do a pointer compare to see if two nodes are the same

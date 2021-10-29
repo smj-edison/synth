@@ -1,4 +1,4 @@
-use crate::constants::{PI, TWO_PI, SAMPLE_RATE};
+use crate::constants::{TWO_PI, SAMPLE_RATE};
 
 use crate::node::{Node, InputType, OutputType};
 use crate::wave::tables::{WAVETABLE_SIZE, FREQUENCY_STEPS};

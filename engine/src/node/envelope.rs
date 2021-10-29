@@ -1,4 +1,4 @@
-use crate::constants::{BUFFER_SIZE, SAMPLE_RATE};
+use crate::constants::{SAMPLE_RATE};
 
 use crate::node::{Node, InputType, OutputType};
 

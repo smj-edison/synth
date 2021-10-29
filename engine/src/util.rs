@@ -1,5 +1,3 @@
-use pulse::sample;
-
 use crate::constants::TWO_PI;
 
 const SIN_WAVETABLE: [f32; 256] = [
