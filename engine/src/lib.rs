@@ -1,3 +1,5 @@
+#![allow(clippy::needless_range_loop)]
+
 #[macro_use]
 extern crate lazy_static;
 extern crate simple_error;
@@ -15,6 +17,7 @@ pub mod config {
 }
 
 pub mod constants {
+    #[allow(clippy::excessive_precision)]
     pub const PI: f32 = 3.14159265358979323846264338327950288f32;
     pub const TWO_PI: f32 = PI * 2.0;
     pub const BUFFER_SIZE: usize = 512;

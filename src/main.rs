@@ -1,3 +1,5 @@
+#![allow(clippy::needless_range_loop)]
+
 use std::{thread, time::Duration, io::Write};
 use std::error::Error;
 
