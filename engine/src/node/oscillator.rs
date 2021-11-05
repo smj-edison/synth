@@ -1,3 +1,6 @@
+use simple_error::SimpleError;
+use simple_error::bail;
+
 use crate::constants::{SAMPLE_RATE, TWO_PI};
 
 use crate::node::{InputType, AudioNode, OutputType};
@@ -64,14 +67,14 @@ impl AudioNode for OscillatorNode {
         self.output_out = interpolate(self.wavetable, self.frequency, self.phase);
     }
 
-    fn receive_audio(&mut self, input_type: InputType, _input: f32) {
-        panic!("Cannot receive {:?}", input_type);
+    fn receive_audio(&mut self, input_type: InputType, _input: f32) -> Result<(), SimpleError> {
+        bail!("Cannot receive {:?}", input_type);
     }
 
-    fn get_output_audio(&self, output_type: OutputType) -> f32 {
+    fn get_output_audio(&self, output_type: OutputType) -> Result<f32, SimpleError> {
         match output_type {
-            OutputType::Out => self.output_out,
-            _ => panic!("Cannot output {:?}", output_type),
+            OutputType::Out => Ok(self.output_out),
+            _ => bail!("Cannot output {:?}", output_type),
         }
     }
 }

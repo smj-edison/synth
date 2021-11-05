@@ -1,3 +1,6 @@
+use simple_error::SimpleError;
+use simple_error::bail;
+
 use crate::constants::SAMPLE_RATE;
 
 use crate::node::{InputType, AudioNode, OutputType};
@@ -132,12 +135,14 @@ impl Envelope {
 }
 
 impl AudioNode for Envelope {
-    fn receive_audio(&mut self, input_type: InputType, input: f32) {
+    fn receive_audio(&mut self, input_type: InputType, input: f32) -> Result<(), SimpleError> {
         match input_type {
             InputType::In => self.input_in = input,
             InputType::Gate => self.input_gate = input,
-            _ => panic!("Cannot receive {:?}", input_type),
+            _ => bail!("Cannot receive {:?}", input_type),
         }
+
+        Ok(())
     }
 
     fn process(&mut self) {
@@ -152,10 +157,10 @@ impl AudioNode for Envelope {
         self.output_out = self.input_in * self.current_amplitude;
     }
 
-    fn get_output_audio(&self, output_type: OutputType) -> f32 {
+    fn get_output_audio(&self, output_type: OutputType) -> Result<f32, SimpleError> {
         match output_type {
-            OutputType::Out => self.output_out,
-            _ => panic!("Cannot output {:?}", output_type),
+            OutputType::Out => Ok(self.output_out),
+            _ => bail!("Cannot output {:?}", output_type),
         }
     }
 }

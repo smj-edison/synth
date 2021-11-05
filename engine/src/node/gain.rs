@@ -1,3 +1,6 @@
+use simple_error::SimpleError;
+use simple_error::bail;
+
 use crate::node::{InputType, AudioNode, OutputType};
 
 pub struct Gain {
@@ -17,11 +20,13 @@ impl Gain {
 }
 
 impl AudioNode for Gain {
-    fn receive_audio(&mut self, input_type: InputType, input: f32) {
+    fn receive_audio(&mut self, input_type: InputType, input: f32) -> Result<(), SimpleError> {
         match input_type {
             InputType::In => self.input_in = input,
-            _ => panic!("Cannot receive {:?}", input_type),
+            _ => bail!("Cannot receive {:?}", input_type),
         }
+
+        Ok(())
     }
 
     fn process(&mut self) {
@@ -30,10 +35,10 @@ impl AudioNode for Gain {
         self.output_out = input * self.gain;
     }
 
-    fn get_output_audio(&self, output_type: OutputType) -> f32 {
+    fn get_output_audio(&self, output_type: OutputType) -> Result<f32, SimpleError> {
         match output_type {
-            OutputType::Out => self.output_out,
-            _ => panic!("Cannot output {:?}", output_type),
+            OutputType::Out => Ok(self.output_out),
+            _ => bail!("Cannot output {:?}", output_type),
         }
     }
 }

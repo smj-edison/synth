@@ -1,3 +1,6 @@
+use simple_error::SimpleError;
+use simple_error::bail;
+
 use crate::constants::{PI, SAMPLE_RATE};
 use crate::node::{InputType, AudioNode, OutputType};
 
@@ -26,12 +29,14 @@ pub struct Filter {
 }
 
 impl AudioNode for Filter {
-    fn receive_audio(&mut self, input_type: InputType, input: f32) {
+    fn receive_audio(&mut self, input_type: InputType, input: f32) -> Result<(), SimpleError> {
         match input_type {
             InputType::FilterOffset => self.filter_offset_in = input,
             InputType::In => self.input_in = input,
-            _ => panic!("Cannot receive {:?}", input_type),
+            _ => bail!("Cannot receive {:?}", input_type),
         }
+
+        Ok(())
     }
 
     fn process(&mut self) {
@@ -52,10 +57,10 @@ impl AudioNode for Filter {
         self.output_out = output;
     }
 
-    fn get_output_audio(&self, output_type: OutputType) -> f32 {
+    fn get_output_audio(&self, output_type: OutputType) -> Result<f32, SimpleError> {
         match output_type {
-            OutputType::Out => self.output_out,
-            _ => panic!("Cannot output {:?}", output_type),
+            OutputType::Out => Ok(self.output_out),
+            _ => bail!("Cannot output {:?}", output_type),
         }
     }
 }

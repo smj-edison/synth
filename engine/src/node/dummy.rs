@@ -1,5 +1,8 @@
 use crate::node::{InputType, AudioNode, OutputType};
 
+use simple_error::bail;
+use simple_error::SimpleError;
+
 pub struct Dummy {
     input_in: f32,
     output_out: f32,
@@ -29,19 +32,21 @@ impl Default for Dummy {
 }
 
 impl AudioNode for Dummy {
-    fn receive_audio(&mut self, input_type: InputType, input: f32) {
+    fn receive_audio(&mut self, input_type: InputType, input: f32) -> Result<(), SimpleError> {
         match input_type {
             InputType::In => self.input_in = input,
-            _ => panic!("Cannot receive {:?}", input_type),
+            _ => bail!("Cannot receive {:?}", input_type),
         }
+
+        Ok(())
     }
 
     fn process(&mut self) {}
 
-    fn get_output_audio(&self, output_type: OutputType) -> f32 {
+    fn get_output_audio(&self, output_type: OutputType) -> Result<f32, SimpleError> {
         match output_type {
-            OutputType::Out => self.output_out,
-            _ => panic!("Cannot output {:?}", output_type),
+            OutputType::Out => Ok(self.output_out),
+            _ => bail!("Cannot output {:?}", output_type),
         }
     }
 }

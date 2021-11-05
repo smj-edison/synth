@@ -4,10 +4,12 @@ pub mod filter;
 pub mod gain;
 pub mod oscillator;
 
+use simple_error::SimpleError;
+
 pub trait AudioNode {
     fn process(&mut self);
-    fn receive_audio(&mut self, input_type: InputType, input: f32);
-    fn get_output_audio(&self, output_type: OutputType) -> f32;
+    fn receive_audio(&mut self, input_type: InputType, input: f32) -> Result<(), SimpleError>;
+    fn get_output_audio(&self, output_type: OutputType) -> Result<f32, SimpleError>;
 }
 
 #[derive(Debug)]

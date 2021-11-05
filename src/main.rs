@@ -3,6 +3,8 @@
 use std::error::Error;
 use std::{io::Write, thread, time::Duration};
 
+use simple_error::SimpleError;
+
 use engine::constants::{BUFFER_SIZE, SAMPLE_RATE};
 
 use engine::backend::{alsa_midi::AlsaMidiClientBackend, MidiClientBackend};
@@ -61,31 +63,31 @@ fn one_sample(
     gain: &mut Gain,
     gate_value: f32,
     _sample_index: i32,
-) -> f32 {
+) -> Result<f32, SimpleError> {
     osc.process();
 
     //osc.set_frequency(lfo.get_output_audio(OutputType::Out) * 500.0 + 700.0);
 
     lfo.process();
 
-    envelope.receive_audio(InputType::In, osc.get_output_audio(OutputType::Out));
-    envelope.receive_audio(InputType::Gate, gate_value);
+    envelope.receive_audio(InputType::In, osc.get_output_audio(OutputType::Out)?)?;
+    envelope.receive_audio(InputType::Gate, gate_value)?;
     envelope.process();
 
-    gain.receive_audio(InputType::In, osc.get_output_audio(OutputType::Out));
+    gain.receive_audio(InputType::In, osc.get_output_audio(OutputType::Out)?)?;
     gain.process();
 
     //println!("{}", lfo.get_output_audio(OutputType::Out));
 
-    filter.receive_audio(InputType::In, gain.get_output_audio(OutputType::Out));
+    filter.receive_audio(InputType::In, gain.get_output_audio(OutputType::Out)?)?;
     filter.receive_audio(
         InputType::FilterOffset,
-        lfo.get_output_audio(OutputType::Out),
-    );
+        lfo.get_output_audio(OutputType::Out)?,
+    )?;
     filter.process();
 
     //filter.get_output_audio(OutputType::Out)
-    0_f32
+    Ok(0_f32)
 }
 
 fn write_to_file(output_file: &mut std::fs::File, data: &[f32]) -> Result<(), Box<dyn Error>> {
@@ -149,7 +151,7 @@ fn wrapper() -> Result<(), Box<dyn Error>> {
                 &mut gain,
                 if buffer_index > attack_time { 0.0 } else { 1.0 },
                 sample_index,
-            );
+            )?;
             sample_index += 1;
         }
 

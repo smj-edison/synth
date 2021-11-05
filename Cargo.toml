@@ -7,3 +7,4 @@ edition = "2018"
 
 [dependencies]
 engine = { path = "engine" }
+simple-error = "0.2.3"
