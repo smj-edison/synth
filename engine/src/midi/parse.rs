@@ -24,30 +24,32 @@ impl MidiParser {
 
     fn is_done(&mut self) -> bool {
         if self.buffer_len == 1 { // we got a new message
-            match ((self.buffer[0] & 0x0F), self.buffer[0]) {
+            match ((self.buffer[0] >> 4), self.buffer[0]) {
                 // timing clock    start       continue       stop    active sensing   reset
                 (_, 0b11111000 | 0b11111010 | 0b11111011 | 0b11111100 | 0b11111110 | 0b11111111) => {
                     self.expected_message_length = Some(0);
                 },
                 // prog change | chn pressue
-                (0b1100 | 0b1101, _) => {
+                (0xC0 | 0xD0, _) => {
                     self.expected_message_length = Some(2);
                 },
                 //nt off| nt on  |aftertch|ctrl chg|pitch bend
-                (0b1000 | 0b1001 | 0b1010 | 0b1011 | 0b1110, _) => {
+                (0x80   |  0x90  |  0xA0  |  0xB0  | 0xE0, _) => {
                     self.expected_message_length = Some(3);
                 },
                 // system exclusive TODO: this'll go forever if it's not 0b11110000, like if it's song position
-                (0b1111, _) => {
+                (0xFF, _) => {
                     self.expected_message_length = None;
                 },
                 _ => {
-                    unimplemented!("Midi parser not fully implemented, received message {:?} (length {})", self.buffer, self.buffer_len);
+                    self.buffer_len = 0; // flush the buffer
+                    return false; 
+                    //unimplemented!("Midi parser not fully implemented, received message {:?} (length {})", self.buffer, self.buffer_len);
                 }
             };
 
             if let Some(len) = self.expected_message_length {
-                len > 0
+                self.buffer_len == len
             } else {
                 false // if none it doesn't know how long it'll be
             }
@@ -64,13 +66,18 @@ impl MidiParser {
     }
 
     fn process(&mut self) {
-        if self.buffer[0] & 0xF0 == 0xF0 {
-            // TODO: system message
+        if self.buffer_len == 0 {
             return;
         }
 
-        let channel = (self.buffer[0] & 0xF0) >> 4 as Channel;
-        let message_type = (self.buffer[0] & 0x0F);
+        if self.buffer[0] & 0xF0 == 0xF0 {
+            // TODO: system message
+            self.buffer_len = 0;
+            return;
+        }
+
+        let channel = (self.buffer[0] & 0x0F) as Channel;
+        let message_type = self.buffer[0] >> 4;
 
         let parsed_event = match (message_type, self.buffer[0]) {
             // note off | note on
@@ -112,12 +119,13 @@ impl MidiParser {
             },
             // pitch bend
             (0b1110, _) => {
-                let pitch_bend = (self.buffer[1] as u16) | ((self.buffer[2] as u16) << 8) as Bend;
+                let pitch_bend = (((self.buffer[1] as u16) | ((self.buffer[2] as u16) << 7)) as i16 - 0x2000) as Bend;
 
                 MidiData::PitchBend { channel, pitch_bend }
             },
             _ => {
-                unimplemented!("Midi protocol not fully implemented")
+                return;
+                // unimplemented!("Midi protocol not fully implemented")
             }
         };
 
