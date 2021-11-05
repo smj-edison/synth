@@ -5,7 +5,7 @@ pub type Pressue = u8;
 pub type ControlIndex = u8;
 pub type ControlValue = u8;
 pub type Patch = u8;
-pub type Bend = u16;
+pub type Bend = i16;
 pub type ExclusiveMessage = Vec<u8>;
 pub type ManufacturerID = [u8; 3];
 pub type TimecodeRate = u8;
@@ -46,7 +46,8 @@ pub enum MidiData {
     ChannelAftertouch { channel: Channel, pressure: Pressue },
     PitchBend { channel: Channel, pitch_bend: Bend },
     SystemCommonMessage { data: SystemCommonMessageData },
-    SystemRealtimeMessage { data: SystemRealtimeMessageData }
+    SystemRealtimeMessage { data: SystemRealtimeMessageData },
+    MidiNone
 }
 
 pub struct MidiMessage {
