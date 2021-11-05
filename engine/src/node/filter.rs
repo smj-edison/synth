@@ -1,5 +1,5 @@
 use crate::constants::{PI, SAMPLE_RATE};
-use crate::node::{InputType, Node, OutputType};
+use crate::node::{InputType, AudioNode, OutputType};
 
 #[derive(Clone, Copy)]
 pub enum FilterType {
@@ -25,7 +25,7 @@ pub struct Filter {
     output_out: f32,
 }
 
-impl Node for Filter {
+impl AudioNode for Filter {
     fn receive_audio(&mut self, input_type: InputType, input: f32) {
         match input_type {
             InputType::FilterOffset => self.filter_offset_in = input,

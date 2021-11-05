@@ -11,7 +11,7 @@ use engine::node::envelope::Envelope;
 use engine::node::filter::{Filter, FilterType};
 use engine::node::gain::Gain;
 use engine::node::oscillator::{Oscillator, OscillatorNode, Waveform};
-use engine::node::{InputType, Node, OutputType};
+use engine::node::{InputType, AudioNode, OutputType};
 use engine::midi::parse::MidiParser;
 
 //use engine::backend::

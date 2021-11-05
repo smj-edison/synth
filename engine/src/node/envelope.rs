@@ -1,6 +1,6 @@
 use crate::constants::SAMPLE_RATE;
 
-use crate::node::{InputType, Node, OutputType};
+use crate::node::{InputType, AudioNode, OutputType};
 
 pub enum EnvelopeState {
     Attacking,
@@ -131,7 +131,7 @@ impl Envelope {
     }
 }
 
-impl Node for Envelope {
+impl AudioNode for Envelope {
     fn receive_audio(&mut self, input_type: InputType, input: f32) {
         match input_type {
             InputType::In => self.input_in = input,

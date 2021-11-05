@@ -1,4 +1,4 @@
-use crate::node::{InputType, Node, OutputType};
+use crate::node::{InputType, AudioNode, OutputType};
 
 pub struct Dummy {
     input_in: f32,
@@ -28,7 +28,7 @@ impl Default for Dummy {
     }
 }
 
-impl Node for Dummy {
+impl AudioNode for Dummy {
     fn receive_audio(&mut self, input_type: InputType, input: f32) {
         match input_type {
             InputType::In => self.input_in = input,

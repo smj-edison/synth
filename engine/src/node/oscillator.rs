@@ -1,6 +1,6 @@
 use crate::constants::{SAMPLE_RATE, TWO_PI};
 
-use crate::node::{InputType, Node, OutputType};
+use crate::node::{InputType, AudioNode, OutputType};
 use crate::wave::interpolate::interpolate;
 use crate::wave::tables::{FREQUENCY_STEPS, WAVETABLE_SIZE};
 use crate::wave::tables::{SAWTOOTH_VALUES, SINE_VALUES, SQUARE_VALUES, TRIANGLE_VALUES};
@@ -56,7 +56,7 @@ impl Oscillator for OscillatorNode {
     }
 }
 
-impl Node for OscillatorNode {
+impl AudioNode for OscillatorNode {
     fn process(&mut self) {
         let phase_advance = self.frequency / (SAMPLE_RATE as f32) * TWO_PI;
         self.phase = (self.phase + phase_advance) % TWO_PI;

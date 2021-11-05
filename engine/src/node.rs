@@ -4,7 +4,7 @@ pub mod filter;
 pub mod gain;
 pub mod oscillator;
 
-pub trait Node {
+pub trait AudioNode {
     fn process(&mut self);
     fn receive_audio(&mut self, input_type: InputType, input: f32);
     fn get_output_audio(&self, output_type: OutputType) -> f32;
