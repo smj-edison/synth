@@ -10,14 +10,14 @@ pub type ExclusiveMessage = Vec<u8>;
 pub type ManufacturerID = [u8; 3];
 pub type TimecodeRate = u8;
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Timecode {
     hours: u8,
     minutes: u8,
     seconds: u8,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SystemCommonMessageData {
     SystemExclusive {
         id: ManufacturerID,
@@ -31,7 +31,7 @@ pub enum SystemCommonMessageData {
        // Tune Request
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum SystemRealtimeMessageData {
     TimingClock,
     Start,
@@ -41,7 +41,7 @@ pub enum SystemRealtimeMessageData {
     Reset,
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum MidiData {
     NoteOff {
         channel: Channel,
