@@ -9,13 +9,10 @@ use engine::constants::{BUFFER_SIZE, SAMPLE_RATE};
 
 use engine::backend::{alsa_midi::AlsaMidiClientBackend, MidiClientBackend};
 use engine::backend::{pulse::PulseClientBackend, AudioClientBackend};
-use engine::node::envelope::Envelope;
-use engine::node::filter::{Filter, FilterType};
-use engine::node::gain::Gain;
-use engine::node::oscillator::{Oscillator, OscillatorNode, Waveform};
-use engine::node::ramp::{Ramp, RampType};
-use engine::node::{InputType, AudioNode, OutputType};
 use engine::midi::parse::MidiParser;
+use engine::midi::messages::MidiData;
+
+use synthesizer::{init, one_sample};
 
 //use engine::backend::
 
@@ -31,76 +28,6 @@ fn connect_midi_backend() -> Result<Box<dyn MidiClientBackend>, Box<dyn Error>> 
     backend.connect()?;
 
     Ok(backend)
-}
-
-fn create_test_envelope() -> Envelope {
-    Envelope::new(0.01, 0.3, 1.0, 1.0)
-}
-
-fn create_test_oscillator() -> OscillatorNode {
-    OscillatorNode::new(Waveform::Square)
-}
-
-fn create_test_lfo() -> OscillatorNode {
-    let mut osc = OscillatorNode::new(Waveform::Sine);
-    osc.set_frequency(1.0);
-
-    osc
-}
-
-fn create_test_filter() -> Filter {
-    Filter::new(FilterType::Lowpass, 10_000.0, 0.707)
-}
-
-fn create_test_gain() -> Gain {
-    Gain::new()
-}
-
-fn create_test_ramp() -> Ramp {
-    let mut ramp = Ramp::new();
-    ramp.set_position(220.0);
-    ramp.set_ramp_type(RampType::Exponential);
-    ramp.ramp_to_value(880.0, 8.0);
-
-    ramp
-}
-
-fn one_sample(
-    envelope: &mut Envelope,
-    osc: &mut OscillatorNode,
-    lfo: &mut OscillatorNode,
-    filter: &mut Filter,
-    gain: &mut Gain,
-    ramp: &mut Ramp,
-    gate_value: f32,
-    _sample_index: i32,
-) -> Result<f32, SimpleError> {
-    osc.process();
-    ramp.process();
-    osc.set_frequency(ramp.get_output_audio(OutputType::Out)?);
-
-    //osc.set_frequency(lfo.get_output_audio(OutputType::Out) * 500.0 + 700.0);
-
-    lfo.process();
-
-    envelope.receive_audio(InputType::Gate, gate_value)?;
-    envelope.process();
-
-    gain.receive_audio(InputType::In, osc.get_output_audio(OutputType::Out)?)?;
-    gain.set_gain(/*envelope.get_output_audio(OutputType::Out)? * */0.4);
-    gain.process();
-
-    //println!("{}", lfo.get_output_audio(OutputType::Out));
-
-    filter.receive_audio(InputType::In, gain.get_output_audio(OutputType::Out)?)?;
-    filter.receive_audio(
-        InputType::FilterOffset,
-        lfo.get_output_audio(OutputType::Out)?,
-    )?;
-    filter.process();
-
-    gain.get_output_audio(OutputType::Out)
-    //Ok(0_f32)
 }
 
 fn write_to_file(output_file: &mut std::fs::File, data: &[f32]) -> Result<(), Box<dyn Error>> {
@@ -129,28 +56,21 @@ fn wrapper() -> Result<(), Box<dyn Error>> {
     let backend = connect_backend()?;
     let midi_backend = connect_midi_backend()?;
 
-    let mut osc = create_test_oscillator();
-    let mut lfo = create_test_lfo();
-    let mut envelope = create_test_envelope();
-    let mut filter = create_test_filter();
-    let mut gain = create_test_gain();
-    let mut ramp = create_test_ramp();
-
     let mut buffer_index = 0;
     let mut sample_index = 0;
 
-    let attack_time = 20;
+    let mut state = init();
 
     loop {
         let midi_in = midi_backend.read().unwrap();
+        let mut messages:Vec<MidiData> = Vec::new();
 
         if !midi_in.is_empty() {
             parser.write_all(midi_in.as_slice())?;
 
             while !parser.parsed.is_empty() {
                 let message = parser.parsed.pop().unwrap();
-
-                println!("{:?}", message);
+                messages.push(message);
             }
         }
 
@@ -158,13 +78,8 @@ fn wrapper() -> Result<(), Box<dyn Error>> {
 
         for sample in buffer.iter_mut() {
             *sample = one_sample(
-                &mut envelope,
-                &mut osc,
-                &mut lfo,
-                &mut filter,
-                &mut gain,
-                &mut ramp,
-                if buffer_index > attack_time { 0.0 } else { 1.0 },
+                &mut state,
+                &mut messages,
                 sample_index,
             )?;
             sample_index += 1;
