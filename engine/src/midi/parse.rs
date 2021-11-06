@@ -30,15 +30,15 @@ impl MidiParser {
                     self.expected_message_length = Some(0);
                 },
                 // prog change | chn pressue
-                (0xC0 | 0xD0, _) => {
+                (0x0C | 0x0D, _) => {
                     self.expected_message_length = Some(2);
                 },
                 //nt off| nt on  |aftertch|ctrl chg|pitch bend
-                (0x80   |  0x90  |  0xA0  |  0xB0  | 0xE0, _) => {
+                (0x08   |  0x09  |  0x0A  |  0x0B  | 0x0E, _) => {
                     self.expected_message_length = Some(3);
                 },
                 // system exclusive TODO: this'll go forever if it's not 0b11110000, like if it's song position
-                (0xFF, _) => {
+                (0x0F, _) => {
                     self.expected_message_length = None;
                 },
                 _ => {
