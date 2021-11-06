@@ -9,6 +9,7 @@ pub mod midi;
 pub mod node;
 pub mod util;
 pub mod wave;
+pub mod pipeline;
 
 pub mod config {
     pub struct SynthConfig {
