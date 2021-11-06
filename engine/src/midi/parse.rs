@@ -8,6 +8,7 @@ pub struct MidiParser {
     buffer_len: usize,
     expected_message_length: Option<usize>,
     incomplete_message: bool,
+    last_message: MidiData,
     pub parsed: Vec<MidiData>,
 }
 
@@ -18,6 +19,7 @@ impl MidiParser {
             buffer_len: 0,
             expected_message_length: Some(0),
             incomplete_message: false,
+            last_message: MidiData::MidiNone,
             parsed: Vec::new(),
         }
     }
@@ -26,7 +28,6 @@ impl MidiParser {
         if self.buffer_len == 1 {
             // we got a new message
             match ((self.buffer[0] >> 4), self.buffer[0]) {
-                
                 (
                     _,
                     //timing clock start       continue       stop    active sensing   reset
@@ -47,8 +48,17 @@ impl MidiParser {
                     self.expected_message_length = None;
                 }
                 _ => {
-                    self.buffer_len = 0; // flush the buffer
-                    return false;
+                    // I'm not sure if this is part of the protocol or not...
+                    match self.last_message {
+                        MidiData::NoteOn {..} | MidiData::NoteOff {..} => {
+                            self.expected_message_length = Some(2);
+                        }
+                        _ => {
+                            self.buffer_len = 0; // flush the buffer
+                            return false;
+                        }
+                    }                   
+                    
                     //unimplemented!("Midi parser not fully implemented, received message {:?} (length {})", self.buffer, self.buffer_len);
                 }
             };
@@ -149,7 +159,21 @@ impl MidiParser {
                 }
             }
             _ => {
-                return;
+                match self.last_message {
+                    MidiData::NoteOn {channel, ..} => {
+                        MidiData::NoteOn {
+                            channel, note: self.buffer[0], velocity: self.buffer[1]
+                        }
+                    }
+                    MidiData::NoteOff {channel, ..} => {
+                        MidiData::NoteOff {
+                            channel, note: self.buffer[0], velocity: self.buffer[1]
+                        }
+                    }
+                    _ => {
+                        return;
+                    }
+                }
                 // unimplemented!("Midi protocol not fully implemented")
             }
         };
@@ -162,11 +186,14 @@ impl Write for MidiParser {
     fn write(&mut self, buf: &[u8]) -> Result<usize, Error> {
         // add to buffer one by one, seeing if the midi message is complete
         for i in 0..buf.len() {
+            println!("byte: {}", buf[i]);
+
             self.buffer[self.buffer_len] = buf[i];
             self.buffer_len += 1;
 
             if self.is_done() {
                 self.process();
+                self.last_message = self.parsed.last().unwrap().clone();
                 self.buffer_len = 0;
             }
         }
