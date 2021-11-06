@@ -31,5 +31,5 @@ pub use dummy::Dummy;
 pub use envelope::Envelope;
 pub use filter::Filter;
 pub use gain::Gain;
-pub use oscillator::Oscillator;
+pub use oscillator::OscillatorNode;
 pub use ramp::Ramp;
