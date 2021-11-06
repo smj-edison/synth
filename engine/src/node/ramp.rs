@@ -38,6 +38,20 @@ impl Ramp {
         }
     }
 
+    pub fn new_with_start_value(start: f32) -> Ramp {
+        Ramp {
+            output_out: start,
+            from: start,
+            to: start,
+            at: start,
+            speed: 0.0,
+            duration: 0.0,
+            from_processed: start,
+            to_processed: start,
+            ramp_type: RampType::Linear,
+        }
+    }
+
     /// duration is in seconds
     fn set_ramp_parameters(&mut self, from: f32, to: f32, duration: f32) {
         self.from = from;
