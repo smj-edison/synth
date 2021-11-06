@@ -100,8 +100,8 @@ impl Filter {
 
         match &self.filter_type {
             FilterType::Lowpass => {
-                let freq = (self.frequency + (self.filter_offset_in * 10_000.0))
-                    .clamp(0.0, SAMPLE_RATE as f32 * 0.5);
+                let freq = (self.frequency * f32::powf(2.0, self.filter_offset_in))
+                    .clamp(0.01, SAMPLE_RATE as f32 * 0.5);
                 //println!("{}", freq);
 
                 let k = (PI * freq / SAMPLE_RATE as f32).tan();
