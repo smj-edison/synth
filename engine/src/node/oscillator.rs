@@ -48,12 +48,29 @@ impl OscillatorNode {
             },
         }
     }
+
+    pub fn new_with_frequency(waveform: Waveform, frequency: f32) -> OscillatorNode {
+        let mut oscillator = OscillatorNode::new(waveform);
+        oscillator.set_frequency(frequency);
+
+        oscillator
+    }
+
+    pub fn set_waveform(&mut self, waveform: Waveform) {
+        self.wavetable = match waveform {
+            Waveform::Sine => &*SINE_VALUES,
+            Waveform::Square => &*SQUARE_VALUES,
+            Waveform::Sawtooth => &*SAWTOOTH_VALUES,
+            Waveform::Triangle => &*TRIANGLE_VALUES,
+        };
+    }
 }
 
 impl Oscillator for OscillatorNode {
     fn get_frequency(&self) -> f32 {
         self.frequency
     }
+
     fn set_frequency(&mut self, frequency: f32) {
         self.frequency = frequency;
     }
