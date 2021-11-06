@@ -3,7 +3,7 @@ use crate::node::{AudioNode, MidiNode, InputType, OutputType};
 use simple_error::bail;
 use simple_error::SimpleError;
 
-use crate::node::{Envelope, Gain};
+use crate::node::{Envelope, Gain, oscillator::Waveform};
 use crate::pipeline::ramped_oscillator::RampedOscillator;
 use crate::midi::messages::MidiData;
 
@@ -42,6 +42,10 @@ impl MidiOscillator {
 
     pub fn set_adsr(&mut self, attack: f32, decay: f32, sustain: f32, release: f32) {
         self.envelope.set_adsr(attack, decay, sustain, release);
+    }
+
+    pub fn set_waveform(&mut self, waveform: Waveform) {
+        self.osc.set_waveform(waveform);
     }
 }
 
