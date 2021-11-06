@@ -145,7 +145,7 @@ fn wrapper() -> Result<(), Box<dyn Error>> {
         let midi_in = midi_backend.read().unwrap();
 
         if !midi_in.is_empty() {
-            parser.write(midi_in.as_slice())?;
+            parser.write_all(midi_in.as_slice())?;
 
             while !parser.parsed.is_empty() {
                 let message = parser.parsed.pop().unwrap();

@@ -97,7 +97,7 @@ impl Ramp {
         match self.ramp_type {
             RampType::Linear => self.at,
             RampType::Exponential => {
-                return (self.from * 2_f32.powf(self.at)).clamp(
+                (self.from * 2_f32.powf(self.at)).clamp(
                     f32::min(self.from, self.to),
                     f32::max(self.from, self.to)
                 )

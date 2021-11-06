@@ -51,6 +51,6 @@ pub enum MidiData {
 }
 
 pub struct MidiMessage {
-    data: MidiData,
-    timestamp: u64
+    pub data: MidiData,
+    pub timestamp: u64
 }

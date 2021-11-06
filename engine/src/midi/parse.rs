@@ -156,3 +156,9 @@ impl Write for MidiParser {
         Ok(())
     }
 }
+
+impl Default for MidiParser {
+    fn default() -> MidiParser {
+        MidiParser::new()
+    }
+}
