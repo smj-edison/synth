@@ -76,8 +76,7 @@ impl Ramp {
                     self.to_processed = f32::ln(self.to / self.from) / f32::ln(2.0);
                 }
 
-                // the duration of the ramp, scaled up by distance to be covered during ramp
-                self.speed = (duration * self.to_processed) / SAMPLE_RATE as f32;
+                self.speed = (self.to_processed / self.duration) / SAMPLE_RATE as f32;
             }
         }
     }

@@ -62,7 +62,7 @@ fn ramp_node_exponential_interpolate_works() -> Result<(), SimpleError> {
     ramp_node.process();
 
     ramp_node.set_ramp_type(RampType::Exponential);
-    ramp_node.ramp_to_value(440.0, SAMPLE_RATE as f32 / 2.0);
+    ramp_node.ramp_to_value(440.0, 2.0 / (SAMPLE_RATE as f32));
 
     // should return 110 the first time
     assert!((ramp_node.get_output_audio(OutputType::Out)? - 110.0).abs() < 0.0001);
