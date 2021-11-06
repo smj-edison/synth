@@ -1,7 +1,7 @@
-use engine::node::{AudioNode, Dummy, Ramp, ramp::RampType, OutputType, InputType};
+use engine::node::{ramp::RampType, AudioNode, Dummy, InputType, OutputType, Ramp};
 use simple_error::SimpleError;
 
-use engine::constants::{SAMPLE_RATE};
+use engine::constants::SAMPLE_RATE;
 
 #[test]
 fn dummy_node_sets_output_correctly() -> Result<(), SimpleError> {
@@ -57,7 +57,7 @@ fn ramp_node_linear_interpolate_works() -> Result<(), SimpleError> {
 #[test]
 fn ramp_node_exponential_interpolate_works() -> Result<(), SimpleError> {
     let mut ramp_node = Ramp::new();
-    
+
     ramp_node.set_position(110.0);
     ramp_node.process();
 
@@ -82,4 +82,3 @@ fn ramp_node_exponential_interpolate_works() -> Result<(), SimpleError> {
 
     Ok(())
 }
-

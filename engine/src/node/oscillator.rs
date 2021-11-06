@@ -1,9 +1,9 @@
-use simple_error::SimpleError;
 use simple_error::bail;
+use simple_error::SimpleError;
 
 use crate::constants::{SAMPLE_RATE, TWO_PI};
 
-use crate::node::{InputType, AudioNode, OutputType};
+use crate::node::{AudioNode, InputType, OutputType};
 use crate::wave::interpolate::interpolate;
 use crate::wave::tables::{FREQUENCY_STEPS, WAVETABLE_SIZE};
 use crate::wave::tables::{SAWTOOTH_VALUES, SINE_VALUES, SQUARE_VALUES, TRIANGLE_VALUES};

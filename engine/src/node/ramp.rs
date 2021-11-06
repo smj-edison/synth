@@ -1,5 +1,5 @@
-use crate::node::{InputType, AudioNode, OutputType};
-use crate::constants::{SAMPLE_RATE};
+use crate::constants::SAMPLE_RATE;
+use crate::node::{AudioNode, InputType, OutputType};
 
 use simple_error::bail;
 use simple_error::SimpleError;
@@ -7,7 +7,7 @@ use simple_error::SimpleError;
 #[derive(Debug)]
 pub enum RampType {
     Linear,
-    Exponential
+    Exponential,
 }
 
 /// note: exponential ramp cannot use a negative value for from or to!
@@ -20,7 +20,7 @@ pub struct Ramp {
     duration: f32,
     from_processed: f32, // processed meaning whatever form the ramp type needs the values in for fast calculation
     to_processed: f32,
-    ramp_type: RampType
+    ramp_type: RampType,
 }
 
 impl Ramp {
@@ -34,7 +34,7 @@ impl Ramp {
             duration: 0.0,
             from_processed: 0.0,
             to_processed: 0.0,
-            ramp_type: RampType::Linear
+            ramp_type: RampType::Linear,
         }
     }
 
@@ -51,7 +51,7 @@ impl Ramp {
 
                 self.at = self.from;
                 self.speed = ((self.to - self.from) / self.duration) / SAMPLE_RATE as f32;
-            },
+            }
             RampType::Exponential => {
                 if self.from < 0.0 || self.to < 0.0 {
                     panic!("Cannot use negative values in an exponential ramp");
@@ -96,12 +96,8 @@ impl Ramp {
     pub fn get_position(&self) -> f32 {
         match self.ramp_type {
             RampType::Linear => self.at,
-            RampType::Exponential => {
-                (self.from * 2_f32.powf(self.at)).clamp(
-                    f32::min(self.from, self.to),
-                    f32::max(self.from, self.to)
-                )
-            }
+            RampType::Exponential => (self.from * 2_f32.powf(self.at))
+                .clamp(f32::min(self.from, self.to), f32::max(self.from, self.to)),
         }
     }
 
@@ -133,7 +129,7 @@ impl AudioNode for Ramp {
         self.at += self.speed;
         self.at = self.at.clamp(
             f32::min(self.from_processed, self.to_processed),
-            f32::max(self.from_processed, self.to_processed)
+            f32::max(self.from_processed, self.to_processed),
         );
 
         self.output_out = self.get_position();

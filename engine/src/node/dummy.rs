@@ -1,4 +1,4 @@
-use crate::node::{InputType, AudioNode, OutputType};
+use crate::node::{AudioNode, InputType, OutputType};
 
 use simple_error::bail;
 use simple_error::SimpleError;

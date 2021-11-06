@@ -1,9 +1,9 @@
-use simple_error::SimpleError;
 use simple_error::bail;
+use simple_error::SimpleError;
 
 use crate::constants::SAMPLE_RATE;
 
-use crate::node::{InputType, AudioNode, OutputType};
+use crate::node::{AudioNode, InputType, OutputType};
 
 pub enum EnvelopeState {
     Attacking,
@@ -22,8 +22,8 @@ pub struct Envelope {
     // amplitude_anchor is the spot where the attack is being based on
     // if the note was pressed down again before a complete release, it should attack
     // based on the current amplitude, not jump to 0
-    amplitude_anchor: f32,  // between 0 and 1
-    current_value: f32, // between 0 and 1
+    amplitude_anchor: f32, // between 0 and 1
+    current_value: f32,    // between 0 and 1
     input_gate: f32,
     output_out: f32,
 }
@@ -52,8 +52,7 @@ impl Envelope {
                 self.curve_position += attack_rate;
 
                 // take `self.attack` seconds, even if attack started from not complete release
-                self.current_value =
-                    attack(self.amplitude_anchor, 1.0, self.curve_position);
+                self.current_value = attack(self.amplitude_anchor, 1.0, self.curve_position);
 
                 if self.current_value >= 1.0 {
                     self.current_value = 1.0;
@@ -121,8 +120,7 @@ impl Envelope {
 
                 // take `self.attack` seconds, even if attack started from not complete release
                 if self.curve_position <= 1.0 {
-                    self.current_value =
-                        release(self.amplitude_anchor, 0.0, self.curve_position);
+                    self.current_value = release(self.amplitude_anchor, 0.0, self.curve_position);
                     self.current_value = self.current_value.clamp(0.0, 1.0);
                 }
 

@@ -1,7 +1,7 @@
-use simple_error::SimpleError;
 use simple_error::bail;
+use simple_error::SimpleError;
 
-use crate::node::{InputType, AudioNode, OutputType};
+use crate::node::{AudioNode, InputType, OutputType};
 
 pub struct Gain {
     input_in: f32,

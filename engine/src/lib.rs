@@ -23,4 +23,3 @@ pub mod constants {
     pub const BUFFER_SIZE: usize = 512;
     pub const SAMPLE_RATE: u32 = 48_000;
 }
-
