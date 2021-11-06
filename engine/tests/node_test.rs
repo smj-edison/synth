@@ -33,7 +33,7 @@ fn dummy_node_sets_receives_input_correctly() -> Result<(), SimpleError> {
 fn ramp_node_linear_interpolate_works() -> Result<(), SimpleError> {
     let mut ramp_node = Ramp::new();
     ramp_node.set_ramp_type(RampType::Linear);
-    ramp_node.ramp_to_value(2.0, SAMPLE_RATE as f32 / 2.0);
+    ramp_node.ramp_to_value(2.0, 2.0 / (SAMPLE_RATE as f32));
 
     // should return 0 the first time
     assert!((ramp_node.get_output_audio(OutputType::Out)? - 0.0).abs() < 0.0001);

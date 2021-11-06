@@ -50,7 +50,7 @@ impl Ramp {
                 self.to_processed = self.to;
 
                 self.at = self.from;
-                self.speed = duration * (self.to - self.from) / SAMPLE_RATE as f32;
+                self.speed = ((self.to - self.from) / self.duration) / SAMPLE_RATE as f32;
             },
             RampType::Exponential => {
                 if self.from < 0.0 || self.to < 0.0 {
