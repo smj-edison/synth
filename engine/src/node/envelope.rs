@@ -128,6 +128,17 @@ impl Envelope {
             }
         }
     }
+    
+    pub fn get_adsr(&self) -> (f32, f32, f32, f32) {
+        (self.attack, self.decay, self.sustain, self.release)
+    }
+
+    pub fn set_adsr(&mut self, attack: f32, decay: f32, sustain: f32, release: f32) {
+        self.attack = attack;
+        self.decay = decay;
+        self.sustain = sustain;
+        self.release = release;
+    }
 }
 
 impl AudioNode for Envelope {
