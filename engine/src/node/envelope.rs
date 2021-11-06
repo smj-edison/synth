@@ -18,14 +18,13 @@ pub struct Envelope {
     sustain: f32,
     release: f32,
     state: EnvelopeState,
-    amplitude_position: f32, // between 0 and 1
+    curve_position: f32, // between 0 and 1
     // amplitude_anchor is the spot where the attack is being based on
     // if the note was pressed down again before a complete release, it should attack
     // based on the current amplitude, not jump to 0
     amplitude_anchor: f32,  // between 0 and 1
-    current_amplitude: f32, // between 0 and 1
+    current_value: f32, // between 0 and 1
     input_gate: f32,
-    input_in: f32,
     output_out: f32,
 }
 
@@ -38,11 +37,10 @@ impl Envelope {
             sustain,
             release,
             state: EnvelopeState::Releasing,
-            amplitude_position: 0.0,
+            curve_position: 0.0,
             amplitude_anchor: 0.0,
-            current_amplitude: 0.0,
+            current_value: 0.0,
             input_gate: 0_f32,
-            input_in: 0_f32,
             output_out: 0_f32,
         }
     }
@@ -51,15 +49,15 @@ impl Envelope {
         self.state = match &self.state {
             EnvelopeState::Attacking => {
                 let attack_rate = (1.0 / SAMPLE_RATE as f32) / self.attack;
-                self.amplitude_position += attack_rate;
+                self.curve_position += attack_rate;
 
                 // take `self.attack` seconds, even if attack started from not complete release
-                self.current_amplitude =
-                    attack(self.amplitude_anchor, 1.0, self.amplitude_position);
+                self.current_value =
+                    attack(self.amplitude_anchor, 1.0, self.curve_position);
 
-                if self.current_amplitude >= 1.0 {
-                    self.current_amplitude = 1.0;
-                    self.amplitude_position = 0.0; // reset amplitude position for decay
+                if self.current_value >= 1.0 {
+                    self.current_value = 1.0;
+                    self.curve_position = 0.0; // reset amplitude position for decay
 
                     EnvelopeState::Decaying
                 } else {
@@ -68,13 +66,13 @@ impl Envelope {
             }
             EnvelopeState::Decaying => {
                 let decay_rate = (1.0 / SAMPLE_RATE as f32) / self.decay;
-                self.amplitude_position += decay_rate;
+                self.curve_position += decay_rate;
 
-                self.current_amplitude = decay(1.0, self.sustain, self.amplitude_position);
+                self.current_value = decay(1.0, self.sustain, self.curve_position);
 
-                if self.current_amplitude <= self.sustain {
-                    self.current_amplitude = self.sustain;
-                    self.amplitude_position = 0.0; // reset amplitude position for release
+                if self.current_value <= self.sustain {
+                    self.current_value = self.sustain;
+                    self.curve_position = 0.0; // reset amplitude position for release
 
                     EnvelopeState::Sustaining
                 } else {
@@ -82,13 +80,13 @@ impl Envelope {
                 }
             }
             EnvelopeState::Sustaining => {
-                self.current_amplitude = self.sustain;
+                self.current_value = self.sustain;
 
                 EnvelopeState::Sustaining
             }
             EnvelopeState::Releasing => {
-                self.amplitude_position = 0.0;
-                self.amplitude_anchor = self.current_amplitude;
+                self.curve_position = 0.0;
+                self.amplitude_anchor = self.current_value;
 
                 EnvelopeState::Attacking
             }
@@ -99,33 +97,33 @@ impl Envelope {
         self.state = match &self.state {
             EnvelopeState::Attacking => {
                 // must have been released, as state is attacking and gate is off
-                self.amplitude_position = 0.0;
-                self.amplitude_anchor = self.current_amplitude;
+                self.curve_position = 0.0;
+                self.amplitude_anchor = self.current_value;
 
                 EnvelopeState::Releasing
             }
             EnvelopeState::Decaying => {
-                self.amplitude_position = 0.0;
-                self.amplitude_anchor = self.current_amplitude;
+                self.curve_position = 0.0;
+                self.amplitude_anchor = self.current_value;
 
                 EnvelopeState::Releasing
             }
             EnvelopeState::Sustaining => {
-                self.amplitude_position = 0.0;
-                self.amplitude_anchor = self.current_amplitude;
+                self.curve_position = 0.0;
+                self.amplitude_anchor = self.current_value;
 
                 EnvelopeState::Releasing
             }
             EnvelopeState::Releasing => {
                 let release_rate = (1.0 / SAMPLE_RATE as f32) / self.release;
 
-                self.amplitude_position += release_rate;
+                self.curve_position += release_rate;
 
                 // take `self.attack` seconds, even if attack started from not complete release
-                if self.amplitude_position <= 1.0 {
-                    self.current_amplitude =
-                        release(self.amplitude_anchor, 0.0, self.amplitude_position);
-                    self.current_amplitude = self.current_amplitude.clamp(0.0, 1.0);
+                if self.curve_position <= 1.0 {
+                    self.current_value =
+                        release(self.amplitude_anchor, 0.0, self.curve_position);
+                    self.current_value = self.current_value.clamp(0.0, 1.0);
                 }
 
                 EnvelopeState::Releasing
@@ -137,7 +135,6 @@ impl Envelope {
 impl AudioNode for Envelope {
     fn receive_audio(&mut self, input_type: InputType, input: f32) -> Result<(), SimpleError> {
         match input_type {
-            InputType::In => self.input_in = input,
             InputType::Gate => self.input_gate = input,
             _ => bail!("Cannot receive {:?}", input_type),
         }
@@ -154,7 +151,7 @@ impl AudioNode for Envelope {
             self.process_gate_released();
         }
 
-        self.output_out = self.input_in * self.current_amplitude;
+        self.output_out = self.current_value;
     }
 
     fn get_output_audio(&self, output_type: OutputType) -> Result<f32, SimpleError> {
