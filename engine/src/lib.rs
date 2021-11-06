@@ -24,10 +24,3 @@ pub mod constants {
     pub const SAMPLE_RATE: u32 = 48_000;
 }
 
-#[cfg(test)]
-mod tests {
-    #[test]
-    fn it_works() {
-        assert_eq!(2 + 2, 4);
-    }
-}
