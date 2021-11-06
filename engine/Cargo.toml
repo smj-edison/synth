@@ -14,3 +14,4 @@ lazy_static = "1.4.0"
 simple-error = "0.2.3"
 pulse = { package = "libpulse-binding", version = "2.25.0" }
 psimple = { package = "libpulse-simple-binding", version = "2.24.1" }
+midir = "0.7.0"

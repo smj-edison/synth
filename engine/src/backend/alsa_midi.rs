@@ -49,7 +49,7 @@ impl MidiClientBackend for AlsaMidiClientBackend {
     }
 
     fn connect(&mut self) -> Result<(), Box<dyn Error>> {
-        self.client = Some(Rawmidi::new("hw:1,0,0", Direction::Capture, true)?);
+        self.client = Some(Rawmidi::new("virtual", Direction::Capture, true)?);
 
         Ok(())
     }
