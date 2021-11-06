@@ -90,8 +90,7 @@ impl Ramp {
         self.to_processed = value;
         self.at = value;
 
-        // to prevent weird issues from popping up it's 1.0 (it doesn't matter since from and to are the same)
-        self.duration = 1.0;
+        self.duration = 0.0;
     }
 
     pub fn get_position(&self) -> f32 {
