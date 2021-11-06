@@ -17,6 +17,14 @@ impl Gain {
             gain: 0.4,
         }
     }
+
+    pub fn set_gain(&mut self, gain: f32) {
+        self.gain = gain;
+    }
+
+    pub fn get_gain(&self) -> f32 {
+        self.gain
+    }
 }
 
 impl AudioNode for Gain {
