@@ -1,5 +1,7 @@
-use engine::node::{AudioNode, Dummy, OutputType, InputType};
+use engine::node::{AudioNode, Dummy, Ramp, ramp::RampType, OutputType, InputType};
 use simple_error::SimpleError;
+
+use engine::constants::{SAMPLE_RATE};
 
 #[test]
 fn dummy_node_sets_output_correctly() -> Result<(), SimpleError> {
@@ -26,3 +28,58 @@ fn dummy_node_sets_receives_input_correctly() -> Result<(), SimpleError> {
 
     Ok(())
 }
+
+#[test]
+fn ramp_node_linear_interpolate_works() -> Result<(), SimpleError> {
+    let mut ramp_node = Ramp::new();
+    ramp_node.set_ramp_type(RampType::Linear);
+    ramp_node.ramp_to_value(2.0, SAMPLE_RATE as f32 / 2.0);
+
+    // should return 0 the first time
+    assert!((ramp_node.get_output_audio(OutputType::Out)? - 0.0).abs() < 0.0001);
+
+    // next 1
+    ramp_node.process();
+    println!("{}", ramp_node.get_output_audio(OutputType::Out)?);
+    assert!((ramp_node.get_output_audio(OutputType::Out)? - 1.0).abs() < 0.0001);
+
+    // and 2
+    ramp_node.process();
+    assert!((ramp_node.get_output_audio(OutputType::Out)? - 2.0).abs() < 0.0001);
+
+    // shouldn't overshoot
+    ramp_node.process();
+    assert!((ramp_node.get_output_audio(OutputType::Out)? - 2.0).abs() < 0.0001);
+
+    Ok(())
+}
+
+#[test]
+fn ramp_node_exponential_interpolate_works() -> Result<(), SimpleError> {
+    let mut ramp_node = Ramp::new();
+    
+    ramp_node.set_position(110.0);
+    ramp_node.process();
+
+    ramp_node.set_ramp_type(RampType::Exponential);
+    ramp_node.ramp_to_value(440.0, SAMPLE_RATE as f32 / 2.0);
+
+    // should return 110 the first time
+    assert!((ramp_node.get_output_audio(OutputType::Out)? - 110.0).abs() < 0.0001);
+
+    // next 220
+    ramp_node.process();
+    println!("{}", ramp_node.get_output_audio(OutputType::Out)?);
+    assert!((ramp_node.get_output_audio(OutputType::Out)? - 220.0).abs() < 0.0001);
+
+    // next 440
+    ramp_node.process();
+    assert!((ramp_node.get_output_audio(OutputType::Out)? - 440.0).abs() < 0.0001);
+
+    // shouldn't overshoot
+    ramp_node.process();
+    assert!((ramp_node.get_output_audio(OutputType::Out)? - 440.0).abs() < 0.0001);
+
+    Ok(())
+}
+

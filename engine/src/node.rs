@@ -3,6 +3,7 @@ pub mod envelope;
 pub mod filter;
 pub mod gain;
 pub mod oscillator;
+pub mod ramp;
 
 use simple_error::SimpleError;
 
@@ -31,3 +32,4 @@ pub use envelope::Envelope;
 pub use filter::Filter;
 pub use gain::Gain;
 pub use oscillator::Oscillator;
+pub use ramp::Ramp;
