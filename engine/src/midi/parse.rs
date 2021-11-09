@@ -186,8 +186,6 @@ impl Write for MidiParser {
     fn write(&mut self, buf: &[u8]) -> Result<usize, Error> {
         // add to buffer one by one, seeing if the midi message is complete
         for i in 0..buf.len() {
-            println!("byte: {}", buf[i]);
-
             self.buffer[self.buffer_len] = buf[i];
             self.buffer_len += 1;
 
