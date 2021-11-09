@@ -6,19 +6,19 @@ use engine::node::envelope::Envelope;
 use engine::node::filter::{Filter, FilterType};
 use engine::node::gain::Gain;
 use engine::node::oscillator::{Oscillator, OscillatorNode, Waveform};
-use engine::pipeline::ramped_oscillator::RampedOscillator;
+use engine::pipeline::midi_oscillator::MidiOscillator;
 use engine::node::ramp::{Ramp, RampType};
-use engine::node::{InputType, AudioNode, OutputType};   
+use engine::node::{InputType, AudioNode, MidiNode, OutputType};   
 use engine::midi::messages::MidiData;
 
 pub struct OneSampleData {
     envelope: Envelope,
-    osc: RampedOscillator,
+    osc: MidiOscillator,
     lfo: OscillatorNode,
     filter: Filter,
     gain: Gain,
     ramp: Ramp,
-    gate_value: f32,
+    notes_on: i32,
 }
 
 pub fn init() -> OneSampleData {
@@ -29,47 +29,41 @@ pub fn init() -> OneSampleData {
         filter: create_test_filter(),
         gain: create_test_gain(),
         ramp: create_test_ramp(),
-        gate_value: 0.0
+        notes_on: 0
     }
 }
 
-pub fn one_sample(data: &mut OneSampleData, midi: &mut Vec<MidiData>, sample_index: i32) -> Result<f32, SimpleError> {
-    data.osc.process();
-    data.ramp.process();
-    //osc.set_frequency(ramp.get_output_audio(OutputType::Out)?);
+pub fn one_sample(state: &mut OneSampleData, midi: &mut Vec<MidiData>, sample_index: i32) -> Result<f32, SimpleError> {
+    state.osc.receive_midi(InputType::In, midi)?;
 
-    //osc.set_frequency(lfo.get_output_audio(OutputType::Out) * 500.0 + 700.0);
+    state.osc.process();
+    state.lfo.process();
 
-    data.lfo.process();
-
-    data.envelope.receive_audio(InputType::Gate, data.gate_value)?;
-    data.envelope.process();
-
-    data.gain.receive_audio(InputType::In, data.osc.get_output_audio(OutputType::Out)?)?;
-    data.gain.set_gain(/*envelope.get_output_audio(OutputType::Out)? * */0.1);
-    data.gain.process();
+    state.gain.receive_audio(InputType::In, state.osc.get_output_audio(OutputType::Out)?)?;
+    state.gain.set_gain(0.2);
+    state.gain.process();
 
     //println!("{}", lfo.get_output_audio(OutputType::Out));
 
-    data.filter.receive_audio(InputType::In, data.gain.get_output_audio(OutputType::Out)?)?;
-    data.filter.receive_audio(
+    state.filter.receive_audio(InputType::In, state.gain.get_output_audio(OutputType::Out)?)?;
+    state.filter.receive_audio(
         InputType::FilterOffset,
-        data.lfo.get_output_audio(OutputType::Out)? * 3.0,
+        state.lfo.get_output_audio(OutputType::Out)? * 3.0,
     )?;
-    data.filter.process();
+    state.filter.process();
 
     midi.clear();
 
-    data.gain.get_output_audio(OutputType::Out)
+    state.gain.get_output_audio(OutputType::Out)
 }
 
 
 fn create_test_envelope() -> Envelope {
-    Envelope::new(0.01, 0.3, 1.0, 1.0)
+    Envelope::new(0.01, 0.3, 1.0, 0.3)
 }
 
-fn create_test_oscillator() -> RampedOscillator {
-    let mut osc = RampedOscillator::new();
+fn create_test_oscillator() -> MidiOscillator {
+    let mut osc = MidiOscillator::new();
     osc.set_waveform(Waveform::Square);
     
     osc

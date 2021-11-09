@@ -15,7 +15,7 @@ impl RampedOscillator {
     pub fn new() -> RampedOscillator {
         RampedOscillator {
             output_out: 0_f32,
-            portamento: 0.1,
+            portamento: 0.05,
             frequency_ramp: Ramp::new_with_start_value(440.0),
             oscillator: OscillatorNode::new_with_frequency(Waveform::Sine, 440.0)
         }
