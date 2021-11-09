@@ -13,7 +13,7 @@ pub struct MidiOscillator {
     osc: RampedOscillator,
     gain: Gain,
     output_out: f32,
-    notes_on: i32
+    gate: bool
 }
 
 impl MidiOscillator {
@@ -24,7 +24,7 @@ impl MidiOscillator {
             osc: RampedOscillator::new(),
             gain: Gain::new(),
             output_out: 0.0,
-            notes_on: 0
+            gate: false
         }
     }
 
@@ -47,6 +47,10 @@ impl MidiOscillator {
     pub fn set_waveform(&mut self, waveform: Waveform) {
         self.osc.set_waveform(waveform);
     }
+
+    pub fn get_gate(&self) -> bool {
+        self.gate
+    }
 }
 
 impl AudioNode for MidiOscillator {
@@ -59,11 +63,11 @@ impl AudioNode for MidiOscillator {
             for message in self.midi_in.iter_mut() {
                 match message {
                     MidiData::NoteOn {channel, note, velocity} => {
-                        self.notes_on += 1;
+                        self.gate = true;
                         self.osc.set_frequency(440.0 * f32::powf(2.0, (*note as f32 - 69.0) / 12.0));
                     }
                     MidiData::NoteOff {channel, note, velocity} => {
-                        self.notes_on -= 1;
+                        self.gate = false;
                     }
                     _ => {}
                 }
@@ -72,7 +76,7 @@ impl AudioNode for MidiOscillator {
 
         self.osc.process();
 
-        self.envelope.receive_audio(InputType::Gate, if self.notes_on > 0 {1.0} else {0.0}).unwrap();
+        self.envelope.receive_audio(InputType::Gate, if self.gate {1.0} else {0.0}).unwrap();
         self.envelope.process();
 
         self.gain.receive_audio(InputType::In, self.osc.get_output_audio(OutputType::Out).unwrap()).unwrap();
