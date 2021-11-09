@@ -19,6 +19,7 @@ pub struct Filter {
     b0: f32,
     b1: f32,
     b2: f32,
+    prev_offset: f32,
     prev_input_1: f32,
     prev_input_2: f32,
     prev_output_1: f32,
@@ -40,7 +41,10 @@ impl AudioNode for Filter {
     }
 
     fn process(&mut self) {
-        self.recompute();
+        if f32::abs(self.filter_offset_in - self.prev_offset) > f32::EPSILON || self.dirty {
+            // avoid excess recomputation
+            self.recompute();
+        }
 
         let output = (self.b0 * self.input_in)
             + (self.b1 * self.prev_input_1)
@@ -53,6 +57,8 @@ impl AudioNode for Filter {
 
         self.prev_output_2 = self.prev_output_1;
         self.prev_output_1 = output;
+
+        self.prev_offset = self.filter_offset_in;
 
         self.output_out = output;
     }
@@ -76,6 +82,7 @@ impl Filter {
             b0: 1.0,
             b1: 0.0,
             b2: 0.0,
+            prev_offset: 0.0,
             prev_input_1: 0.0,
             prev_input_2: 0.0,
             prev_output_1: 0.0,
