@@ -6,5 +6,10 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-engine = { path = "engine" }
+engine = { path = "./engine" }
 simple-error = "0.2.3"
+
+[workspace]
+members = [
+    "engine",
+]
