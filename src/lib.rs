@@ -1,7 +1,5 @@
 use simple_error::SimpleError;
 
-use engine::constants::{BUFFER_SIZE, SAMPLE_RATE};
-
 use engine::node::envelope::Envelope;
 use engine::node::filter::{Filter, FilterType};
 use engine::node::gain::Gain;
@@ -11,6 +9,7 @@ use engine::node::ramp::{Ramp, RampType};
 use engine::node::{InputType, AudioNode, MidiNode, OutputType};   
 use engine::midi::messages::MidiData;
 
+#[allow(dead_code)]
 pub struct OneSampleData {
     envelope: Envelope,
     osc: MidiOscillator,
@@ -33,7 +32,7 @@ pub fn init() -> OneSampleData {
     }
 }
 
-pub fn one_sample(state: &mut OneSampleData, midi: &mut Vec<MidiData>, sample_index: i32) -> Result<f32, SimpleError> {
+pub fn one_sample(state: &mut OneSampleData, midi: &mut Vec<MidiData>, _sample_index: i32) -> Result<f32, SimpleError> {
     state.osc.receive_midi(InputType::In, midi)?;
 
     state.osc.process();

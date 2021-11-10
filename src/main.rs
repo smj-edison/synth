@@ -3,8 +3,6 @@
 use std::error::Error;
 use std::{io::Write, thread, time::Duration};
 
-use simple_error::SimpleError;
-
 use engine::constants::{BUFFER_SIZE, SAMPLE_RATE};
 
 use engine::backend::{alsa_midi::AlsaMidiClientBackend, MidiClientBackend};

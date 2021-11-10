@@ -62,11 +62,11 @@ impl AudioNode for MidiOscillator {
         if !self.midi_in.is_empty() {
             for message in self.midi_in.iter_mut() {
                 match message {
-                    MidiData::NoteOn {channel, note, velocity} => {
+                    MidiData::NoteOn {note, ..} => {
                         self.gate = true;
                         self.osc.set_frequency(440.0 * f32::powf(2.0, (*note as f32 - 69.0) / 12.0));
                     }
-                    MidiData::NoteOff {channel, note, velocity} => {
+                    MidiData::NoteOff {..} => {
                         self.gate = false;
                     }
                     _ => {}

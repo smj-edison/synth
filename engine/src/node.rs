@@ -29,6 +29,7 @@ pub enum InputType {
 #[derive(Debug)]
 pub enum OutputType {
     Out,
+    Gate
 }
 
 pub use dummy::Dummy;
