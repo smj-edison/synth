@@ -29,7 +29,6 @@ pub enum InputType {
 #[derive(Debug)]
 pub enum OutputType {
     Out,
-    None,
 }
 
 pub use dummy::Dummy;
