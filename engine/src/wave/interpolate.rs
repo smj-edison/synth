@@ -1,16 +1,16 @@
 use crate::constants::TWO_PI;
 use crate::util::lerp;
 
-use super::tables::{BASE_FREQUENCY, FREQUENCY_STEPS, WAVETABLE_SIZE};
+use super::tables::{BASE_FREQUENCY, WAVETABLE_SIZE};
 
 pub fn interpolate(
-    wavetable: &[[f32; WAVETABLE_SIZE]; FREQUENCY_STEPS],
+    wavetable: &Vec<[f32; WAVETABLE_SIZE]>,
     frequency: f32,
     phase: f32,
 ) -> f32 {
     let phase = (phase / TWO_PI) % 1.0; // make phase bound
 
-    let wavetable_index = ((frequency / BASE_FREQUENCY).ln() / 2_f32.ln()) as usize; // which wavetable to use (rounded down)
+    let wavetable_index = (frequency / BASE_FREQUENCY) as usize; // which wavetable to use (rounded down)
     let sample_index = (phase * WAVETABLE_SIZE as f32) as usize; // which sample
     let sample_offset = (phase * WAVETABLE_SIZE as f32) % 1.0; // interpolate between samples
     let frequency_difference = BASE_FREQUENCY * 2_f32.powi((wavetable_index as i32).max(0));

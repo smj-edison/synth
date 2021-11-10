@@ -31,7 +31,7 @@ pub struct OscillatorNode {
     phase: f32,
     frequency: f32,
     output_out: f32,
-    wavetable: &'static [[f32; WAVETABLE_SIZE]; FREQUENCY_STEPS],
+    wavetable: &'static Vec<[f32; WAVETABLE_SIZE]>,
 }
 
 impl OscillatorNode {
