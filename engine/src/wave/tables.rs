@@ -13,10 +13,6 @@ lazy_static! {
             for j in 0..WAVETABLE_SIZE {
                 wavetables[i][j] = ((j as f32 / WAVETABLE_SIZE as f32) * TWO_PI).sin()
             }
-
-            if i == 124 || i == 125 {
-                println!("{:?}", wavetables[i]);
-            }
         }
 
         wavetables
